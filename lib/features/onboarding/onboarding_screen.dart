@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:rumo/core/asset_images.dart';
+import 'package:rumo/features/auth/routes/auth_routes.dart';
 
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
@@ -20,7 +21,7 @@ class OnboardingScreen extends StatelessWidget {
                 width: double.maxFinite,
                 child: FilledButton(
                   onPressed: () {
-                    Navigator.pushNamed(context, '/create-account');
+                    Navigator.pushNamed(context, AuthRoutes.createAccountScreen);
                   },
                   child: Text(
                     'Criar conta',
@@ -35,7 +36,9 @@ class OnboardingScreen extends StatelessWidget {
               SizedBox(
                 width: double.maxFinite,
                 child: OutlinedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.pushNamed(context, AuthRoutes.loginScreen);
+                  },
                   child: Text(
                     'Entrar',
                     style: TextStyle(

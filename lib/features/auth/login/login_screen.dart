@@ -3,8 +3,8 @@ import 'package:flutter_svg/svg.dart';
 import 'package:rumo/core/asset_images.dart';
 import 'package:rumo/core/form_keys.dart';
 
-class CreateAccountScreen extends StatelessWidget {
-  const CreateAccountScreen({super.key});
+class LoginScreen extends StatelessWidget {
+  const LoginScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +13,7 @@ class CreateAccountScreen extends StatelessWidget {
       body: Stack(
         children: [
           Padding(
-            padding: const EdgeInsets.only(top: 23, left: 25),
+            padding: const EdgeInsets.only(top: 28, left: 20.5),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -51,7 +51,7 @@ class CreateAccountScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                Image.asset(AssetImages.createAccountCharacter),
+                Image.asset(AssetImages.loginCharacter),
               ],
             ),
           ),
@@ -96,7 +96,7 @@ class CreateAccountScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Cadastre-se',
+                        'Bem vindo (a) de volta!',
                         style: TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 24,
@@ -106,7 +106,7 @@ class CreateAccountScreen extends StatelessWidget {
                       ),
                       SizedBox(height: 10),
                       Text(
-                        'Preencha os dados abaixo para criar sua conta.',
+                        'Preencha com seus dados.',
                         style: TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 14,
@@ -116,48 +116,9 @@ class CreateAccountScreen extends StatelessWidget {
                       ),
                       SizedBox(height: 24),
                       Form(
-                        key: FormKeys.createAccount,
+                        key: FormKeys.login,
                         child: Column(
                           children: [
-                            TextFormField(
-                              decoration: const InputDecoration(
-                                labelText: 'Nome',
-                                labelStyle: TextStyle(
-                                  fontFamily: 'Inter',
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w200,
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(12),
-                                  ),
-                                  borderSide: BorderSide(
-                                    color: Color(0xFF383838), // cor desejada
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(12),
-                                  ),
-                                  borderSide: BorderSide(
-                                    color: Color.fromARGB(
-                                      255,
-                                      205,
-                                      205,
-                                      205,
-                                    ), // cor desejada
-                                  ),
-                                ),
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Digite seu nome';
-                                }
-                                return null;
-                              },
-                            ),
-
-                            SizedBox(height: 16),
                             TextFormField(
                               decoration: const InputDecoration(
                                 labelText: 'E-mail',
@@ -234,54 +195,9 @@ class CreateAccountScreen extends StatelessWidget {
                               ),
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return 'Digite uma senha';
-                                }
-                                if (value.length < 6) {
-                                  return 'A senha deve ter pelo menos 6 caracteres';
-                                }
-                                return null;
-                              },
-                            ),
-                            SizedBox(height: 16),
-                            TextFormField(
-                              obscureText: true,
-                              decoration: const InputDecoration(
-                                labelText: 'Confirmar senha',
-                                labelStyle: TextStyle(
-                                  fontFamily: 'Inter',
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w200,
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(12),
-                                  ),
-                                  borderSide: BorderSide(
-                                    color: Color(0xFF383838), // cor desejada
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(12),
-                                  ),
-                                  borderSide: BorderSide(
-                                    color: Color.fromARGB(
-                                      255,
-                                      205,
-                                      205,
-                                      205,
-                                    ), // cor desejada
-                                  ),
-                                ),
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Confirme sua senha';
-                                }
-                                if (value != FormKeys.senhaController.text) {
-                                  return 'As senhas não coincidem';
-                                }
-                                return null;
+                                  return 'Digite sua senha';
+                                } 
+                                return 'Senha ou e-mail inválidos';
                               },
                             ),
                           ],
@@ -293,18 +209,30 @@ class CreateAccountScreen extends StatelessWidget {
                         width: double.maxFinite,
                         child: FilledButton(
                           onPressed: () {
-                            if (FormKeys.createAccount.currentState!
-                                .validate()) {
-                              // Campos válidos, prossiga com o cadastro
+                            if (FormKeys.login.currentState!.validate()) {
+                              // Process login
                             }
                           },
                           child: Text(
-                            'Criar conta',
+                            'Entrar',
                             style: TextStyle(
                               fontFamily: 'Inter',
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                             ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 16),
+                      Align(
+                        alignment: Alignment.center,
+                        child: Text(
+                          'Esqueci minha senha',
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: Color.fromARGB(255, 0, 0, 0),
                           ),
                         ),
                       ),

@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:rumo/features/onboarding/routes/onboarding_routes.dart';
 import 'package:rumo/routes/app_router.dart';
 import 'package:rumo/theme/app_theme.dart';
 
 void main() {
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(statusBarColor: Color.fromARGB(255, 255, 255, 255)),
+  );
+
   runApp(const MyApp());
 }
 
@@ -16,7 +21,6 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Rumo',
       theme: AppTheme().theme,
-      // home: OnboardingScreen(),
       routes: AppRouter.routes,
       initialRoute: OnboardingRoutes.onboardingScreen,
     );
