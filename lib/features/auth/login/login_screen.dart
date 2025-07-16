@@ -1,10 +1,50 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:rumo/core/asset_images.dart';
-import 'package:rumo/core/form_keys.dart';
+import 'package:rumo/core/bottom_nav_bar.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _senhaController = TextEditingController();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _senhaController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _login() async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: _emailController.text,
+          password: _senhaController.text,
+        );
+        if (!mounted) return; // Garante que o widget ainda está ativo
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Login realizado com sucesso!')));
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const NavigationMenu()),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Erro ao fazer login: $e')));
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -116,10 +156,11 @@ class LoginScreen extends StatelessWidget {
                       ),
                       SizedBox(height: 24),
                       Form(
-                        key: FormKeys.login,
+                        key: _formKey,
                         child: Column(
                           children: [
                             TextFormField(
+                              controller: _emailController,
                               decoration: const InputDecoration(
                                 labelText: 'E-mail',
                                 labelStyle: TextStyle(
@@ -132,7 +173,7 @@ class LoginScreen extends StatelessWidget {
                                     Radius.circular(12),
                                   ),
                                   borderSide: BorderSide(
-                                    color: Color(0xFF383838), // cor desejada
+                                    color: Color(0xFF383838),
                                   ),
                                 ),
                                 enabledBorder: OutlineInputBorder(
@@ -140,12 +181,7 @@ class LoginScreen extends StatelessWidget {
                                     Radius.circular(12),
                                   ),
                                   borderSide: BorderSide(
-                                    color: Color.fromARGB(
-                                      255,
-                                      205,
-                                      205,
-                                      205,
-                                    ), // cor desejada
+                                    color: Color.fromARGB(255, 205, 205, 205),
                                   ),
                                 ),
                               ),
@@ -163,6 +199,7 @@ class LoginScreen extends StatelessWidget {
                             ),
                             SizedBox(height: 16),
                             TextFormField(
+                              controller: _senhaController,
                               obscureText: true,
                               decoration: const InputDecoration(
                                 labelText: 'Senha',
@@ -176,7 +213,7 @@ class LoginScreen extends StatelessWidget {
                                     Radius.circular(12),
                                   ),
                                   borderSide: BorderSide(
-                                    color: Color(0xFF383838), // cor desejada
+                                    color: Color(0xFF383838),
                                   ),
                                 ),
                                 enabledBorder: OutlineInputBorder(
@@ -184,35 +221,25 @@ class LoginScreen extends StatelessWidget {
                                     Radius.circular(12),
                                   ),
                                   borderSide: BorderSide(
-                                    color: Color.fromARGB(
-                                      255,
-                                      205,
-                                      205,
-                                      205,
-                                    ), // cor desejada
+                                    color: Color.fromARGB(255, 205, 205, 205),
                                   ),
                                 ),
                               ),
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
                                   return 'Digite sua senha';
-                                } 
-                                return 'Senha ou e-mail inválidos';
+                                }
+                                return null;
                               },
                             ),
                           ],
                         ),
                       ),
-
                       SizedBox(height: 62),
                       SizedBox(
                         width: double.maxFinite,
                         child: FilledButton(
-                          onPressed: () {
-                            if (FormKeys.login.currentState!.validate()) {
-                              // Process login
-                            }
-                          },
+                          onPressed: _login,
                           child: Text(
                             'Entrar',
                             style: TextStyle(

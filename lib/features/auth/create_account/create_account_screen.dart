@@ -1,11 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:rumo/core/asset_images.dart';
-import 'package:rumo/core/form_keys.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-class CreateAccountScreen extends StatelessWidget {
+class CreateAccountScreen extends StatefulWidget {
   const CreateAccountScreen({super.key});
+
+  @override
+  State<CreateAccountScreen> createState() => _CreateAccountScreenState();
+}
+
+class _CreateAccountScreenState extends State<CreateAccountScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _nomeController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _senhaController = TextEditingController();
+  final _confirmarSenhaController = TextEditingController();
+
+  @override
+  void dispose() {
+    _nomeController.dispose();
+    _emailController.dispose();
+    _senhaController.dispose();
+    _confirmarSenhaController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _criarConta() async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _senhaController.text.trim(),
+        );
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Conta criada com sucesso!')),
+        );
+        Navigator.pushReplacementNamed(context, '/login');
+      } on FirebaseAuthException catch (e) {
+        String message = 'Erro ao criar conta';
+        if (e.code == 'email-already-in-use') {
+          message = 'E-mail já está em uso';
+        } else if (e.code == 'invalid-email') {
+          message = 'E-mail inválido';
+        } else if (e.code == 'weak-password') {
+          message = 'Senha muito fraca';
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +75,7 @@ class CreateAccountScreen extends StatelessWidget {
                         width: 134,
                         height: 52,
                       ),
-                      Text(
+                      const Text(
                         'Memórias na',
                         style: TextStyle(
                           color: Colors.white,
@@ -37,8 +84,8 @@ class CreateAccountScreen extends StatelessWidget {
                           fontWeight: FontWeight.w300,
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 10),
+                      const Padding(
+                        padding: EdgeInsets.only(left: 10),
                         child: Text(
                           'palma da mão.',
                           style: TextStyle(
@@ -75,8 +122,8 @@ class CreateAccountScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    color: Color(0xFF383838),
-                    icon: Icon(Icons.chevron_left, size: 29),
+                    color: const Color(0xFF383838),
+                    icon: const Icon(Icons.chevron_left, size: 29),
                   ),
                 ),
                 Container(
@@ -87,7 +134,7 @@ class CreateAccountScreen extends StatelessWidget {
                     right: 24,
                   ),
                   width: double.maxFinite,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.vertical(
                       top: Radius.circular(16),
@@ -96,7 +143,7 @@ class CreateAccountScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      const Text(
                         'Cadastre-se',
                         style: TextStyle(
                           fontFamily: 'Inter',
@@ -105,8 +152,8 @@ class CreateAccountScreen extends StatelessWidget {
                           color: Color.fromARGB(255, 0, 0, 0),
                         ),
                       ),
-                      SizedBox(height: 10),
-                      Text(
+                      const SizedBox(height: 10),
+                      const Text(
                         'Preencha os dados abaixo para criar sua conta.',
                         style: TextStyle(
                           fontFamily: 'Inter',
@@ -115,12 +162,13 @@ class CreateAccountScreen extends StatelessWidget {
                           color: Color.fromARGB(255, 0, 0, 0),
                         ),
                       ),
-                      SizedBox(height: 24),
+                      const SizedBox(height: 24),
                       Form(
-                        key: FormKeys.createAccount,
+                        key: _formKey,
                         child: Column(
                           children: [
                             TextFormField(
+                              controller: _nomeController,
                               decoration: const InputDecoration(
                                 labelText: 'Nome',
                                 labelStyle: TextStyle(
@@ -133,7 +181,7 @@ class CreateAccountScreen extends StatelessWidget {
                                     Radius.circular(12),
                                   ),
                                   borderSide: BorderSide(
-                                    color: Color(0xFF383838), // cor desejada
+                                    color: Color(0xFF383838),
                                   ),
                                 ),
                                 enabledBorder: OutlineInputBorder(
@@ -141,12 +189,7 @@ class CreateAccountScreen extends StatelessWidget {
                                     Radius.circular(12),
                                   ),
                                   borderSide: BorderSide(
-                                    color: Color.fromARGB(
-                                      255,
-                                      205,
-                                      205,
-                                      205,
-                                    ), // cor desejada
+                                    color: Color.fromARGB(255, 205, 205, 205),
                                   ),
                                 ),
                               ),
@@ -157,10 +200,9 @@ class CreateAccountScreen extends StatelessWidget {
                                 return null;
                               },
                             ),
-
-                            SizedBox(height: 16),
+                            const SizedBox(height: 16),
                             TextFormField(
-                              controller: FormKeys.emailController,
+                              controller: _emailController,
                               decoration: const InputDecoration(
                                 labelText: 'E-mail',
                                 labelStyle: TextStyle(
@@ -173,7 +215,7 @@ class CreateAccountScreen extends StatelessWidget {
                                     Radius.circular(12),
                                   ),
                                   borderSide: BorderSide(
-                                    color: Color(0xFF383838), // cor desejada
+                                    color: Color(0xFF383838),
                                   ),
                                 ),
                                 enabledBorder: OutlineInputBorder(
@@ -181,12 +223,7 @@ class CreateAccountScreen extends StatelessWidget {
                                     Radius.circular(12),
                                   ),
                                   borderSide: BorderSide(
-                                    color: Color.fromARGB(
-                                      255,
-                                      205,
-                                      205,
-                                      205,
-                                    ), // cor desejada
+                                    color: Color.fromARGB(255, 205, 205, 205),
                                   ),
                                 ),
                               ),
@@ -194,17 +231,15 @@ class CreateAccountScreen extends StatelessWidget {
                                 if (value == null || value.isEmpty) {
                                   return 'Digite seu e-mail';
                                 }
-                                if (!RegExp(
-                                  r'^[^@]+@[^@]+\.[^@]+',
-                                ).hasMatch(value)) {
+                                if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
                                   return 'Digite um e-mail válido';
                                 }
                                 return null;
                               },
                             ),
-                            SizedBox(height: 16),
+                            const SizedBox(height: 16),
                             TextFormField(
-                              controller: FormKeys.senhaController,
+                              controller: _senhaController,
                               obscureText: true,
                               decoration: const InputDecoration(
                                 labelText: 'Senha',
@@ -218,7 +253,7 @@ class CreateAccountScreen extends StatelessWidget {
                                     Radius.circular(12),
                                   ),
                                   borderSide: BorderSide(
-                                    color: Color(0xFF383838), // cor desejada
+                                    color: Color(0xFF383838),
                                   ),
                                 ),
                                 enabledBorder: OutlineInputBorder(
@@ -226,12 +261,7 @@ class CreateAccountScreen extends StatelessWidget {
                                     Radius.circular(12),
                                   ),
                                   borderSide: BorderSide(
-                                    color: Color.fromARGB(
-                                      255,
-                                      205,
-                                      205,
-                                      205,
-                                    ), // cor desejada
+                                    color: Color.fromARGB(255, 205, 205, 205),
                                   ),
                                 ),
                               ),
@@ -245,8 +275,9 @@ class CreateAccountScreen extends StatelessWidget {
                                 return null;
                               },
                             ),
-                            SizedBox(height: 16),
+                            const SizedBox(height: 16),
                             TextFormField(
+                              controller: _confirmarSenhaController,
                               obscureText: true,
                               decoration: const InputDecoration(
                                 labelText: 'Confirmar senha',
@@ -260,7 +291,7 @@ class CreateAccountScreen extends StatelessWidget {
                                     Radius.circular(12),
                                   ),
                                   borderSide: BorderSide(
-                                    color: Color(0xFF383838), // cor desejada
+                                    color: Color(0xFF383838),
                                   ),
                                 ),
                                 enabledBorder: OutlineInputBorder(
@@ -268,12 +299,7 @@ class CreateAccountScreen extends StatelessWidget {
                                     Radius.circular(12),
                                   ),
                                   borderSide: BorderSide(
-                                    color: Color.fromARGB(
-                                      255,
-                                      205,
-                                      205,
-                                      205,
-                                    ), // cor desejada
+                                    color: Color.fromARGB(255, 205, 205, 205),
                                   ),
                                 ),
                               ),
@@ -281,7 +307,7 @@ class CreateAccountScreen extends StatelessWidget {
                                 if (value == null || value.isEmpty) {
                                   return 'Confirme sua senha';
                                 }
-                                if (value != FormKeys.senhaController.text) {
+                                if (value != _senhaController.text) {
                                   return 'As senhas não coincidem';
                                 }
                                 return null;
@@ -290,43 +316,12 @@ class CreateAccountScreen extends StatelessWidget {
                           ],
                         ),
                       ),
-
-                      SizedBox(height: 62),
+                      const SizedBox(height: 62),
                       SizedBox(
                         width: double.maxFinite,
                         child: FilledButton(
-                          onPressed: () async {
-                            if (FormKeys.createAccount.currentState!
-                                .validate()) {
-                              try {
-                                await FirebaseAuth.instance
-                                    .createUserWithEmailAndPassword(
-                                      email: FormKeys.emailController.text
-                                          .trim(),
-                                      password: FormKeys.senhaController.text
-                                          .trim(),
-                                    );
-                                // Exemplo: navegar para a tela inicial após criar a conta
-                                Navigator.pushReplacementNamed(
-                                  context,
-                                  '/',
-                                );
-                              } on FirebaseAuthException catch (e) {
-                                String message = 'Erro ao criar conta';
-                                if (e.code == 'email-already-in-use') {
-                                  message = 'E-mail já está em uso';
-                                } else if (e.code == 'invalid-email') {
-                                  message = 'E-mail inválido';
-                                } else if (e.code == 'weak-password') {
-                                  message = 'Senha muito fraca';
-                                }
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text(message)),
-                                );
-                              }
-                            }
-                          },
-                          child: Text(
+                          onPressed: _criarConta,
+                          child: const Text(
                             'Criar conta',
                             style: TextStyle(
                               fontFamily: 'Inter',
