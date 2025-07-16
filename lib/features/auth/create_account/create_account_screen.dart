@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:rumo/core/asset_images.dart';
 import 'package:rumo/core/form_keys.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class CreateAccountScreen extends StatelessWidget {
   const CreateAccountScreen({super.key});
@@ -159,6 +160,7 @@ class CreateAccountScreen extends StatelessWidget {
 
                             SizedBox(height: 16),
                             TextFormField(
+                              controller: FormKeys.emailController,
                               decoration: const InputDecoration(
                                 labelText: 'E-mail',
                                 labelStyle: TextStyle(
@@ -202,6 +204,7 @@ class CreateAccountScreen extends StatelessWidget {
                             ),
                             SizedBox(height: 16),
                             TextFormField(
+                              controller: FormKeys.senhaController,
                               obscureText: true,
                               decoration: const InputDecoration(
                                 labelText: 'Senha',
@@ -292,10 +295,35 @@ class CreateAccountScreen extends StatelessWidget {
                       SizedBox(
                         width: double.maxFinite,
                         child: FilledButton(
-                          onPressed: () {
+                          onPressed: () async {
                             if (FormKeys.createAccount.currentState!
                                 .validate()) {
-                              // Campos válidos, prossiga com o cadastro
+                              try {
+                                await FirebaseAuth.instance
+                                    .createUserWithEmailAndPassword(
+                                      email: FormKeys.emailController.text
+                                          .trim(),
+                                      password: FormKeys.senhaController.text
+                                          .trim(),
+                                    );
+                                // Exemplo: navegar para a tela inicial após criar a conta
+                                Navigator.pushReplacementNamed(
+                                  context,
+                                  '/',
+                                );
+                              } on FirebaseAuthException catch (e) {
+                                String message = 'Erro ao criar conta';
+                                if (e.code == 'email-already-in-use') {
+                                  message = 'E-mail já está em uso';
+                                } else if (e.code == 'invalid-email') {
+                                  message = 'E-mail inválido';
+                                } else if (e.code == 'weak-password') {
+                                  message = 'Senha muito fraca';
+                                }
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(message)),
+                                );
+                              }
                             }
                           },
                           child: Text(
