@@ -10,7 +10,6 @@ class AppTheme {
         primary: Color(0xFF4E61F6),
         surface: Colors.white,
       ),
-      
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(
