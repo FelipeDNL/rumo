@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:rumo/core/asset_images.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:rumo/core/navigation_menu.dart';
+import 'package:rumo/features/auth/repositories/auth_repository.dart';
 
 class CreateAccountScreen extends StatefulWidget {
   const CreateAccountScreen({super.key});
@@ -17,6 +19,10 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   final _senhaController = TextEditingController();
   final _confirmarSenhaController = TextEditingController();
 
+  bool hidePassword = true;
+  bool hideConfirmPassword = true;
+  bool isLoading = false;
+
   @override
   void dispose() {
     _nomeController.dispose();
@@ -29,11 +35,11 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   Future<void> _criarConta() async {
     if (_formKey.currentState!.validate()) {
       try {
-        await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: _emailController.text.trim(),
-          password: _senhaController.text.trim(),
-        );
         if (!mounted) return;
+        FirebaseAuth.instance.currentUser?.updateDisplayName(
+          _nomeController.text,
+        );
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Conta criada com sucesso!')),
         );
@@ -47,9 +53,9 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         } else if (e.code == 'weak-password') {
           message = 'Senha muito fraca';
         }
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(message)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(message)));
       }
     }
   }
@@ -105,236 +111,234 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
           ),
           Align(
             alignment: Alignment.bottomCenter,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(15),
-                  child: IconButton.filled(
-                    padding: const EdgeInsets.all(10),
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/');
-                    },
-                    style: IconButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(15),
+                    child: IconButton.filled(
+                      padding: const EdgeInsets.all(10),
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/');
+                      },
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
-                    ),
-                    color: const Color(0xFF383838),
-                    icon: const Icon(Icons.chevron_left, size: 29),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.only(
-                    top: 32,
-                    bottom: 32,
-                    left: 24,
-                    right: 24,
-                  ),
-                  width: double.maxFinite,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(16),
+                      color: const Color(0xFF383838),
+                      icon: const Icon(Icons.chevron_left, size: 29),
                     ),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Cadastre-se',
-                        style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 24,
-                          fontWeight: FontWeight.w700,
-                          color: Color.fromARGB(255, 0, 0, 0),
-                        ),
+                  Container(
+                    padding: const EdgeInsets.only(
+                      top: 32,
+                      bottom: 32,
+                      left: 24,
+                      right: 24,
+                    ),
+                    width: double.maxFinite,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(16),
                       ),
-                      const SizedBox(height: 10),
-                      const Text(
-                        'Preencha os dados abaixo para criar sua conta.',
-                        style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Color.fromARGB(255, 0, 0, 0),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Cadastre-se',
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 24,
+                            fontWeight: FontWeight.w700,
+                            color: Color.fromARGB(255, 0, 0, 0),
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 24),
-                      Form(
-                        key: _formKey,
-                        child: Column(
-                          children: [
-                            TextFormField(
-                              controller: _nomeController,
-                              decoration: const InputDecoration(
-                                labelText: 'Nome',
-                                labelStyle: TextStyle(
-                                  fontFamily: 'Inter',
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w200,
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(12),
-                                  ),
-                                  borderSide: BorderSide(
-                                    color: Color(0xFF383838),
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(12),
-                                  ),
-                                  borderSide: BorderSide(
-                                    color: Color.fromARGB(255, 205, 205, 205),
-                                  ),
-                                ),
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Digite seu nome';
-                                }
-                                return null;
-                              },
-                            ),
-                            const SizedBox(height: 16),
-                            TextFormField(
-                              controller: _emailController,
-                              decoration: const InputDecoration(
-                                labelText: 'E-mail',
-                                labelStyle: TextStyle(
-                                  fontFamily: 'Inter',
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w200,
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(12),
-                                  ),
-                                  borderSide: BorderSide(
-                                    color: Color(0xFF383838),
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(12),
-                                  ),
-                                  borderSide: BorderSide(
-                                    color: Color.fromARGB(255, 205, 205, 205),
-                                  ),
-                                ),
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Digite seu e-mail';
-                                }
-                                if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                                  return 'Digite um e-mail válido';
-                                }
-                                return null;
-                              },
-                            ),
-                            const SizedBox(height: 16),
-                            TextFormField(
-                              controller: _senhaController,
-                              obscureText: true,
-                              decoration: const InputDecoration(
-                                labelText: 'Senha',
-                                labelStyle: TextStyle(
-                                  fontFamily: 'Inter',
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w200,
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(12),
-                                  ),
-                                  borderSide: BorderSide(
-                                    color: Color(0xFF383838),
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(12),
-                                  ),
-                                  borderSide: BorderSide(
-                                    color: Color.fromARGB(255, 205, 205, 205),
-                                  ),
-                                ),
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Digite uma senha';
-                                }
-                                if (value.length < 6) {
-                                  return 'A senha deve ter pelo menos 6 caracteres';
-                                }
-                                return null;
-                              },
-                            ),
-                            const SizedBox(height: 16),
-                            TextFormField(
-                              controller: _confirmarSenhaController,
-                              obscureText: true,
-                              decoration: const InputDecoration(
-                                labelText: 'Confirmar senha',
-                                labelStyle: TextStyle(
-                                  fontFamily: 'Inter',
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w200,
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(12),
-                                  ),
-                                  borderSide: BorderSide(
-                                    color: Color(0xFF383838),
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(12),
-                                  ),
-                                  borderSide: BorderSide(
-                                    color: Color.fromARGB(255, 205, 205, 205),
-                                  ),
-                                ),
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Confirme sua senha';
-                                }
-                                if (value != _senhaController.text) {
-                                  return 'As senhas não coincidem';
-                                }
-                                return null;
-                              },
-                            ),
-                          ],
+                        const SizedBox(height: 10),
+                        const Text(
+                          'Preencha os dados abaixo para criar sua conta.',
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Color.fromARGB(255, 0, 0, 0),
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 62),
-                      SizedBox(
-                        width: double.maxFinite,
-                        child: FilledButton(
-                          onPressed: _criarConta,
-                          child: const Text(
-                            'Criar conta',
-                            style: TextStyle(
-                              fontFamily: 'Inter',
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
+                        const SizedBox(height: 24),
+                        Form(
+                          key: _formKey,
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          child: Column(
+                            children: [
+                              TextFormField(
+                                controller: _nomeController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Nome',
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.trim().isEmpty) {
+                                    return 'Digite seu nome';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 16),
+                              TextFormField(
+                                controller: _emailController,
+                                decoration: const InputDecoration(
+                                  labelText: 'E-mail',
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Digite seu e-mail';
+                                  }
+                                  if (!RegExp(
+                                    r'^[^@]+@[^@]+\.[^@]+',
+                                  ).hasMatch(value)) {
+                                    return 'Digite um e-mail válido';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 16),
+                              TextFormField(
+                                controller: _senhaController,
+                                obscureText: true,
+                                decoration: InputDecoration(
+                                  labelText: 'Senha',
+                                  suffixIcon: IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        hidePassword = !hidePassword;
+                                      });
+                                    },
+                                    icon: const Icon(Icons.visibility_off),
+                                  ),
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Digite uma senha';
+                                  }
+                                  if (value.length < 6) {
+                                    return 'A senha deve ter pelo menos 6 caracteres';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 16),
+                              TextFormField(
+                                controller: _confirmarSenhaController,
+                                obscureText: true,
+                                decoration: InputDecoration(
+                                  labelText: 'Confirmar senha',
+                                  suffixIcon: IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        hideConfirmPassword =
+                                            !hideConfirmPassword;
+                                      });
+                                    },
+                                    icon: Icon(Icons.visibility_off),
+                                  ),
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Confirme sua senha';
+                                  }
+                                  if (value != _senhaController.text) {
+                                    return 'As senhas não coincidem';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 62),
+                        SizedBox(
+                          width: double.maxFinite,
+                          child: FilledButton(
+                            onPressed: isLoading
+                                ? null
+                                : () async {
+                                    final isValid = _formKey.currentState!
+                                        .validate();
+                                    if (isValid) {
+                                      try {
+                                        setState(() {
+                                          isLoading = true;
+                                        });
+
+                                        final authRepository = AuthRepository();
+                                        await authRepository.createAccount(
+                                          email: _emailController.text,
+                                          password: _senhaController.text,
+                                          name: _nomeController.text,
+                                        );
+
+                                        if (!mounted) return;
+                                        Navigator.of(
+                                          context,
+                                        ).popUntil((route) => route.isFirst);
+
+                                        Navigator.of(
+                                          context,
+                                        ).pushReplacementNamed('/main-page');
+
+                                      } on AuthException catch (error) {
+                                        if (!context.mounted) return;
+                                        showDialog(
+                                          context: context,
+                                          builder: (context) {
+                                            return AlertDialog(
+                                              title: Text('Erro'),
+                                              content: Text(error.getMessage()),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed: () {
+                                                    Navigator.of(context).pop();
+                                                  },
+                                                  child: Text('Ok'),
+                                                ),
+                                              ],
+                                            );
+                                          },
+                                        );
+                                      } finally {
+                                        if (mounted) {
+                                          setState(() {
+                                            isLoading = false;
+                                          });
+                                        }
+                                      }
+                                    }
+                                  },
+                            child: Builder(
+                              builder: (context) {
+                                if (isLoading) {
+                                  return SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                    ),
+                                  );
+                                }
+                                return Text('Criar conta');
+                              },
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],

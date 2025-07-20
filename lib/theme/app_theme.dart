@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  
   ThemeData get theme {
     return ThemeData(
       colorScheme: ColorScheme.fromSeed(
@@ -37,6 +36,27 @@ class AppTheme {
           side: BorderSide(color: Color(0xFF4E61F6), width: 1.5),
           padding: EdgeInsets.symmetric(vertical: 18),
         ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        labelStyle: TextStyle(
+          fontFamily: 'Inter',
+          fontSize: 14,
+          fontWeight: FontWeight.w200,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(12)),
+          borderSide: BorderSide(color: Color(0xFF383838)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(12)),
+          borderSide: BorderSide(color: Color.fromARGB(255, 205, 205, 205)),
+        ),
+        fillColor: WidgetStateColor.resolveWith((states) {
+          if (states.contains(WidgetState.error)) {
+            return Colors.red;
+          }
+          return Colors.white;
+        }),
       ),
     );
   }
