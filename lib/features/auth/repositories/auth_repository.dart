@@ -20,26 +20,63 @@ class AuthRepository {
       final currentUser = FirebaseAuth.instance.currentUser;
 
       if (currentUser == null) {
-        throw AuthException(code: 'invalid-user');
+        throw AuthException(code: "invalid-user");
       }
 
-      await FirebaseFirestore.instance.collection('users').doc(currentUser.uid).set({
-        "id": currentUser.uid,
-        "email": email,
-        "name": name,
-      });
-
+      await FirebaseFirestore.instance
+          .collection("users")
+          .doc(currentUser.uid)
+          .set({"id": currentUser.uid, "email": email, "name": name});
     } on FirebaseAuthException catch (error) {
-      log(error.message ?? 'Erro desconhecido');
+      log(error.message ?? 'Error desconhecido');
 
       throw AuthException(code: error.code);
+    }
+  }
+
+  Future<void> signInUser({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+    } on FirebaseAuthException catch (error) {
+      log(
+        "Firebase Error (Code: ${error.code}) ${error.message ?? "Erro desconhecido"}",
+        error: error,
+      );
+
+      throw AuthException(code: error.code, originalMessage: error.message);
+    }
+  }
+
+  Future<void> logout() async {
+    await FirebaseAuth.instance.signOut();
+  }
+
+  Future<void> sendPasswordResetEmail({
+    required String email,
+  }) async {
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+    } on FirebaseAuthException catch (error) {
+      log(
+        "Firebase Error (Code: ${error.code}) ${error.message ?? "Erro desconhecido"}",
+        error: error,
+      );
+
+      throw AuthException(code: error.code, originalMessage: error.message);
     }
   }
 }
 
 class AuthException implements Exception {
   final String code;
-  AuthException({required this.code});
+  final String? originalMessage;
+  AuthException({required this.code, this.originalMessage});
 
   String getMessage() {
     switch (code) {

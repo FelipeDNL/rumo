@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:rumo/features/navigation_bar/map/map_screen.dart';
-import 'package:rumo/features/navigation_bar/profile/profile.dart';
+import 'package:rumo/features/home/screens/map/map_screen.dart';
+import 'package:rumo/features/home/screens/profile/profile.dart';
 import 'package:rumo/core/asset_icons.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -17,8 +17,8 @@ class _NavigationMenuState extends State<NavigationMenu> {
   final List<Widget> _pages = [
     MapScreen(),
     Placeholder(),
-    Placeholder(), // Placeholder for Diaries
-    Placeholder(), // Placeholder for Add
+    Placeholder(),
+    Placeholder(), 
     Profile(),
   ];
 

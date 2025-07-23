@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:rumo/core/asset_images.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:rumo/core/navigation_menu.dart';
 import 'package:rumo/features/auth/repositories/auth_repository.dart';
 
 class CreateAccountScreen extends StatefulWidget {
@@ -14,9 +12,9 @@ class CreateAccountScreen extends StatefulWidget {
 
 class _CreateAccountScreenState extends State<CreateAccountScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nomeController = TextEditingController();
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
-  final _senhaController = TextEditingController();
+  final _passwordController = TextEditingController();
   final _confirmarSenhaController = TextEditingController();
 
   bool hidePassword = true;
@@ -25,39 +23,11 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
 
   @override
   void dispose() {
-    _nomeController.dispose();
+    _nameController.dispose();
     _emailController.dispose();
-    _senhaController.dispose();
+    _passwordController.dispose();
     _confirmarSenhaController.dispose();
     super.dispose();
-  }
-
-  Future<void> _criarConta() async {
-    if (_formKey.currentState!.validate()) {
-      try {
-        if (!mounted) return;
-        FirebaseAuth.instance.currentUser?.updateDisplayName(
-          _nomeController.text,
-        );
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Conta criada com sucesso!')),
-        );
-        Navigator.pushReplacementNamed(context, '/login');
-      } on FirebaseAuthException catch (e) {
-        String message = 'Erro ao criar conta';
-        if (e.code == 'email-already-in-use') {
-          message = 'E-mail já está em uso';
-        } else if (e.code == 'invalid-email') {
-          message = 'E-mail inválido';
-        } else if (e.code == 'weak-password') {
-          message = 'Senha muito fraca';
-        }
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(message)));
-      }
-    }
   }
 
   @override
@@ -176,7 +146,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                           child: Column(
                             children: [
                               TextFormField(
-                                controller: _nomeController,
+                                controller: _nameController,
                                 decoration: const InputDecoration(
                                   labelText: 'Nome',
                                 ),
@@ -207,7 +177,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                               ),
                               const SizedBox(height: 16),
                               TextFormField(
-                                controller: _senhaController,
+                                controller: _passwordController,
                                 obscureText: true,
                                 decoration: InputDecoration(
                                   labelText: 'Senha',
@@ -250,7 +220,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                                   if (value == null || value.isEmpty) {
                                     return 'Confirme sua senha';
                                   }
-                                  if (value != _senhaController.text) {
+                                  if (value != _passwordController.text) {
                                     return 'As senhas não coincidem';
                                   }
                                   return null;
@@ -266,8 +236,9 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                             onPressed: isLoading
                                 ? null
                                 : () async {
-                                    final isValid = _formKey.currentState!
-                                        .validate();
+                                    final isValid =
+                                        _formKey.currentState?.validate() ??
+                                        false;
                                     if (isValid) {
                                       try {
                                         setState(() {
@@ -277,21 +248,29 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                                         final authRepository = AuthRepository();
                                         await authRepository.createAccount(
                                           email: _emailController.text,
-                                          password: _senhaController.text,
-                                          name: _nomeController.text,
+                                          password: _passwordController.text,
+                                          name: _nameController.text,
                                         );
 
-                                        if (!mounted) return;
+                                        setState(() {
+                                          isLoading = false;
+                                        });
+
+                                        if (!context.mounted) return;
                                         Navigator.of(
                                           context,
                                         ).popUntil((route) => route.isFirst);
-
-                                        Navigator.of(
+                                        Navigator.pushReplacementNamed(
                                           context,
-                                        ).pushReplacementNamed('/main-page');
-
+                                          '/main-page'
+                                        );
                                       } on AuthException catch (error) {
                                         if (!context.mounted) return;
+
+                                        setState(() {
+                                          isLoading = false;
+                                        });
+
                                         showDialog(
                                           context: context,
                                           builder: (context) {
@@ -303,18 +282,12 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                                                   onPressed: () {
                                                     Navigator.of(context).pop();
                                                   },
-                                                  child: Text('Ok'),
+                                                  child: Text("OK"),
                                                 ),
                                               ],
                                             );
                                           },
                                         );
-                                      } finally {
-                                        if (mounted) {
-                                          setState(() {
-                                            isLoading = false;
-                                          });
-                                        }
                                       }
                                     }
                                   },
