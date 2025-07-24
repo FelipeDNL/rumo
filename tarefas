@@ -1,3 +1,11 @@
-icone mostrar senha
-campo vermelho
-isLoading ao criar conta e logar
+1 - Atualizar o AuthException para lidar com os erros no login e 
+mostrar uma mensagem personalizada na tela
+
+2 - Atualizar o AuthException para lidar com os erros no "Esqueci minha senha" e 
+mostrar uma mensagem personalizada na tela
+
+3 - Além de mostrar a mensagem personalizada, mostrem para o usuário, de alguma forma, 
+um sinal de sucesso quando o email de reset de senha for enviado
+
+4 - Fazer a estilização da nossa bottom navigation bar, fazendo a troca entre as telas e 
+trocando a cor da label e do ícone do BottomNavItem quando ele estiver selecionado.

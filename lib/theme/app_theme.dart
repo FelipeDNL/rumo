@@ -10,7 +10,7 @@ class AppTheme {
         surface: Colors.white,
       ),
       bottomSheetTheme: BottomSheetThemeData(
-        backgroundColor: Colors.white,
+        backgroundColor: Color(0xFFFFFFFF),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(16),
@@ -25,7 +25,14 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          padding: EdgeInsets.symmetric(vertical: 18),
+          padding: EdgeInsets.symmetric(vertical: 16),
+          textStyle: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontFamily: 'Inter',
+            fontWeight: FontWeight.w600,
+            height: 1.33,
+          ),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
@@ -34,29 +41,50 @@ class AppTheme {
             borderRadius: BorderRadius.circular(12),
           ),
           side: BorderSide(color: Color(0xFF4E61F6), width: 1.5),
-          padding: EdgeInsets.symmetric(vertical: 18),
+          padding: EdgeInsets.symmetric(vertical: 16),
         ),
       ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: Colors.black,
+          textStyle: TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            height: 24 / 12,
+            decoration: TextDecoration.underline,
+            decorationColor: Colors.black,
+          ),
+        ),
+      ),
+
+      /// InputDecorationTheme controla a aparência dos inputs de texto
       inputDecorationTheme: InputDecorationTheme(
-        labelStyle: TextStyle(
+        hintStyle: TextStyle(
           fontFamily: 'Inter',
           fontSize: 14,
-          fontWeight: FontWeight.w200,
+          fontWeight: FontWeight.w400,
+          color: Color(0xFF9EA2AE),
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(12)),
-          borderSide: BorderSide(color: Color(0xFF383838)),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Color(0xFFE5E7EA), width: 1.5),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(12)),
-          borderSide: BorderSide(color: Color.fromARGB(255, 205, 205, 205)),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Color(0xFFE5E7EA), width: 1.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Color(0xFFEE443F), width: 1.5),
         ),
         fillColor: WidgetStateColor.resolveWith((states) {
           if (states.contains(WidgetState.error)) {
-            return Colors.red;
+            return Color(0xFFFDECEC);
           }
-          return Colors.white;
+          return Color(0xFFF9FAFB);
         }),
+        filled: true,
       ),
     );
   }

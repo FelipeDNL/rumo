@@ -37,7 +37,7 @@ class OnboardingScreen extends StatelessWidget {
                 width: double.maxFinite,
                 child: OutlinedButton(
                   onPressed: () {
-                    Navigator.pushReplacementNamed(context, '/login');
+                    Navigator.pushReplacementNamed(context, '/login'); //TROCAR AQUI
                   },
                   child: Text(
                     'Entrar',

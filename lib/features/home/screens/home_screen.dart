@@ -1,84 +1,70 @@
 import 'package:flutter/material.dart';
+import 'package:rumo/features/home/screens/browse/browse_screen.dart';
 import 'package:rumo/features/home/screens/map/map_screen.dart';
 import 'package:rumo/features/home/screens/profile/profile.dart';
 import 'package:rumo/core/asset_icons.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:rumo/features/home/widgets/bottom_nav_item.dart';
 
-class NavigationMenu extends StatefulWidget {
-  const NavigationMenu({super.key});
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
 
   @override
-  State<NavigationMenu> createState() => _NavigationMenuState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _NavigationMenuState extends State<NavigationMenu> {
+class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
   final List<Widget> _pages = [
     MapScreen(),
     Placeholder(),
-    Placeholder(),
-    Placeholder(), 
+    BrowseScreen(),
     Profile(),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_selectedIndex],
-      bottomNavigationBar: NavigationBar(
-        backgroundColor: Colors.white,
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: (int index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
-        destinations: [
-          NavigationDestination(
-            icon: SvgPicture.asset(AssetIcons.map),
-            label: 'Mapa',
-            selectedIcon: SvgPicture.asset(
-              AssetIcons.map,
-              color: Theme.of(context).colorScheme.primary,
+      resizeToAvoidBottomInset: false,
+      bottomNavigationBar: BottomAppBar(
+        color: Colors.white,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            BottomNavItem(
+              icon: AssetIcons.map,
+              label: 'Mapa',
+              selected: _selectedIndex == 0,
+              onTap: () => setState(() => _selectedIndex = 0),
             ),
-          ),
-          NavigationDestination(
-            icon: SvgPicture.asset(AssetIcons.diary),
-            label: 'Diários',
-            selectedIcon: SvgPicture.asset(
-              AssetIcons.diary,
-              color: Theme.of(context).colorScheme.primary,
+            BottomNavItem(
+              icon: AssetIcons.diary,
+              label: 'Diários',
+              selected: _selectedIndex == 1,
+              onTap: () => setState(() => _selectedIndex = 1),
             ),
-          ),
-          NavigationDestination(
-            icon: (IconTheme(
-              data: IconThemeData(
-                color: Theme.of(context).colorScheme.primary,
-                size: 35,
-              ),
-              child: Icon(Icons.add),
-            )),
-            label: 'Adicionar',
-          ),
-          NavigationDestination(
-            icon: SvgPicture.asset(AssetIcons.compass),
-            label: 'Explorar',
-            selectedIcon: SvgPicture.asset(
-              AssetIcons.compass,
-              color: Theme.of(context).colorScheme.primary,
+            IconButton.filled(
+              style: IconButton.styleFrom(backgroundColor: Color(0xFFDDE1FF)),
+              onPressed: () {},
+              icon: Icon(Icons.add, color: Color(0xFF4E61F6), size: 20),
             ),
-          ),
-          NavigationDestination(
-            icon: SvgPicture.asset(AssetIcons.userCircle),
-            label: 'Perfil',
-            selectedIcon: SvgPicture.asset(
-              AssetIcons.userCircle,
-              color: Theme.of(context).colorScheme.primary,
+            BottomNavItem(
+              icon: AssetIcons.compass,
+              label: 'Explorar',
+              selected: _selectedIndex == 2,
+              onTap: () => setState(() => _selectedIndex = 2),
             ),
-          ),
-        ],
+            BottomNavItem(
+              icon: AssetIcons.userCircle,
+              label: 'Perfil',
+              selected: _selectedIndex == 3,
+              onTap: () => setState(() => _selectedIndex = 3),
+            ),
+          ],
+        ),
       ),
+      body: _pages[_selectedIndex],
     );
   }
 }

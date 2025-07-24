@@ -57,9 +57,7 @@ class AuthRepository {
     await FirebaseAuth.instance.signOut();
   }
 
-  Future<void> sendPasswordResetEmail({
-    required String email,
-  }) async {
+  Future<void> sendPasswordResetEmail({required String email}) async {
     try {
       await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
     } on FirebaseAuthException catch (error) {
@@ -80,14 +78,24 @@ class AuthException implements Exception {
 
   String getMessage() {
     switch (code) {
-      case "email-already-in-use":
-        return "Email já cadastrado";
       case "invalid-email":
         return "Email inválido";
+      case "user-disabled":
+        return "O usuário foi desabilitado";
+      case "user-not-found":
+        return "O usuário foi desabilitado";
+      case "wrong-password":
+        return "Senha ou e-mail inválido";
       case "weak-password":
-        return "Senha deve ter 6 ou mais caracteres";
+        return "Senha deve ter no minímo 6 caracteres";
+      case "email-already-in-use":
+        return "Email já cadastrado";
       case "invalid-user":
         return "usuário inválido";
+      case "auth/invalid-email":
+        return "Digite um email válido";
+      case "auth/user-not-found":
+        return "Usuário não encontrado";
       default:
         return "Erro desconhecido";
     }

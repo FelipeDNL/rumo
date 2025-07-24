@@ -37,6 +37,7 @@ dependencies:
   firebase_core: ^3.15.1
   firebase_auth: ^5.6.2
   cloud_firestore: ^5.6.11
+  sliding_up_panel: ^2.0.0+1
 
 dev_dependencies:
   flutter_test:
@@ -67,6 +68,7 @@ flutter:
     - assets/images/create_account_character.png
     - assets/images/login_character.png
     - assets/images/map_characters.png
+    - assets/images/catedral_test.png
     - assets/icons/compass.svg
     - assets/icons/diary.svg
     - assets/icons/map.svg

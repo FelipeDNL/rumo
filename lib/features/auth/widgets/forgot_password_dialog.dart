@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:rumo/features/auth/repositories/auth_repository.dart';
 
@@ -25,35 +23,12 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
           controller: _emailController,
           decoration: const InputDecoration(hintText: 'E-mail'),
           validator: (value) {
-            final invalidEmailText = 'Insira um e-mail válido';
-
-            if (value == null || value.trim().isEmpty) {
-              return invalidEmailText;
+            if (value == null || value.isEmpty) {
+              return 'Digite seu e-mail';
             }
-
-            final email = value.trim();
-
-            if (!email.contains('@') || !email.contains('.')) {
-              return invalidEmailText;
+            if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+              return 'Digite um e-mail válido';
             }
-
-            final parts = email.split('@');
-            final firstPart = parts[0];
-
-            if (firstPart.trim().isEmpty) {
-              return invalidEmailText;
-            }
-
-            final lastPart = parts[1];
-
-            if (lastPart.trim().isEmpty || !lastPart.contains('.')) {
-              return invalidEmailText;
-            }
-
-            if (lastPart.startsWith('.') || lastPart.endsWith('.')) {
-              return invalidEmailText;
-            }
-
             return null;
           },
         ),
@@ -73,8 +48,32 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
             await authRepository.sendPasswordResetEmail(
               email: _emailController.text,
             );
-          } catch (error) {
-            log("Error resetting password", error: error);
+            if (!context.mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                backgroundColor: Colors.green,
+                content: Text('E-mail de redefinição enviado com sucesso!'),
+              ),
+            );
+            Navigator.of(context).pop();
+          } on AuthException catch (error) {
+            showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  title: Text('Erro'),
+                  content: Text(error.getMessage()),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: Text("OK"),
+                    ),
+                  ],
+                );
+              },
+            );
           } finally {
             setState(() {
               isLoading = false;
