@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rumo/features/home/screens/browse/browse_screen.dart';
+import 'package:rumo/features/home/screens/map/diary/screens/user_diaries_screen.dart';
 import 'package:rumo/features/home/screens/map/map_screen.dart';
 import 'package:rumo/features/home/screens/profile/profile.dart';
 import 'package:rumo/core/asset_icons.dart';
@@ -17,7 +18,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<Widget> _pages = [
     MapScreen(),
-    Placeholder(),
+    UserDiariesScreen(),
     BrowseScreen(),
     Profile(),
   ];

@@ -92,10 +92,6 @@ class AuthException implements Exception {
         return "Email já cadastrado";
       case "invalid-user":
         return "usuário inválido";
-      case "auth/invalid-email":
-        return "Digite um email válido";
-      case "auth/user-not-found":
-        return "Usuário não encontrado";
       default:
         return "Erro desconhecido";
     }

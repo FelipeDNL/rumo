@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:rumo/features/onboarding/routes/onboarding_routes.dart';
 
 class Profile extends StatefulWidget {
   const Profile({super.key});
@@ -148,12 +149,58 @@ class _ProfileState extends State<Profile> {
                                     ),
                                     padding: EdgeInsets.symmetric(vertical: 13),
                                   ),
-                                  onPressed: () async {
-                                    await FirebaseAuth.instance.signOut();
-                                    Navigator.pushReplacementNamed(
-                                      context,
-                                      '/',
-                                    ); // Troque pela sua rota de login
+                                  onPressed: () {
+                                    showModalBottomSheet(
+                                      context: context,
+                                      builder: (context) {
+                                        return Padding(
+                                          padding: const EdgeInsets.all(24.0),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                'Sair da conta',
+                                                style: TextStyle(
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                              SizedBox(height: 16),
+                                              Text(
+                                                'Tem certeza que deseja sair da sua conta?',
+                                                style: TextStyle(fontSize: 16),
+                                              ),
+                                              SizedBox(height: 24),
+                                              Column(
+                                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                children: [
+                                                  FilledButton(
+                                                    onPressed: () {
+                                                      Navigator.of(context).pop();
+                                                    },
+                                                    child: Text('Cancelar'),
+                                                  ),
+                                                  ElevatedButton(
+                                                    onPressed: () async {
+                                                      await FirebaseAuth.instance.signOut();
+                                                      if (context.mounted) {
+                                                        Navigator.of(context).popUntil((_) => false);
+                                                        Navigator.pushNamed(
+                                                          context,
+                                                          OnboardingRoutes.onboardingScreen,
+                                                        );
+                                                      }
+                                                    },
+                                                    child: Text('Sair'),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    );
                                   },
                                   child: Text(
                                     'Sair',
@@ -180,59 +227,3 @@ class _ProfileState extends State<Profile> {
     );
   }
 }
-
-
-/*
-child: Column(
-                spacing: 20,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Perfil',
-                    style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
-                  ),
-                  Row(
-                    children: [
-                      SizedBox(
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.all(Radius.circular(18)),
-                            color: Colors.blueGrey[50],
-                          ),
-                          child: SizedBox(
-                            child: Padding(
-                              padding: EdgeInsetsGeometry.all(10),
-                              child: Row(
-                                children: [
-                                  SizedBox( //camera icone
-                                    width: 50,
-                                    height: 50,
-                                    child: DecoratedBox(
-                                      decoration: BoxDecoration(
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.primary,
-                                        borderRadius: BorderRadius.circular(
-                                          100.0,
-                                        ),
-                                      ),
-                                      child: const Icon(
-                                        Icons.camera_alt_outlined,
-                                      ),
-                                    ),
-                                  ),
-                                  Text('Pressione aqui para trocar foto'),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(child: Text('Nome: ')),
-                  SizedBox(child: Text('Cidade: ')),
-                ],
-              ),
-
- */

@@ -253,15 +253,3 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 }
-
-/*
-
-Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.primary,
-      bottomSheet: SizedBox(
-        width: double.maxFinite,
-        child: 
-      ),
-      
-    );
- */
