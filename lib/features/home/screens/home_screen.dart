@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:rumo/features/home/screens/browse/browse_screen.dart';
-import 'package:rumo/features/home/screens/map/diary/screens/user_diaries_screen.dart';
-import 'package:rumo/features/home/screens/map/map_screen.dart';
-import 'package:rumo/features/home/screens/profile/profile.dart';
 import 'package:rumo/core/asset_icons.dart';
+import 'package:rumo/features/diary/screens/user_diaries_screen.dart';
 import 'package:rumo/features/home/widgets/bottom_nav_item.dart';
+import 'package:rumo/features/user/screens/profile_screen.dart';
+import 'package:rumo/features/user/widgets/create_diary_bottom_sheet.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,58 +13,88 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 0;
+  int currentIndex = 0;
 
-  final List<Widget> _pages = [
-    MapScreen(),
-    UserDiariesScreen(),
-    BrowseScreen(),
-    Profile(),
-  ];
+  void onSelectItem(int index) {
+    setState(() {
+      currentIndex = index;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      bottomNavigationBar: BottomAppBar(
-        color: Colors.white,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            BottomNavItem(
-              icon: AssetIcons.map,
-              label: 'Mapa',
-              selected: _selectedIndex == 0,
-              onTap: () => setState(() => _selectedIndex = 0),
-            ),
-            BottomNavItem(
-              icon: AssetIcons.diary,
-              label: 'Diários',
-              selected: _selectedIndex == 1,
-              onTap: () => setState(() => _selectedIndex = 1),
-            ),
-            IconButton.filled(
-              style: IconButton.styleFrom(backgroundColor: Color(0xFFDDE1FF)),
-              onPressed: () {},
-              icon: Icon(Icons.add, color: Color(0xFF4E61F6), size: 20),
-            ),
-            BottomNavItem(
-              icon: AssetIcons.compass,
-              label: 'Explorar',
-              selected: _selectedIndex == 2,
-              onTap: () => setState(() => _selectedIndex = 2),
-            ),
-            BottomNavItem(
-              icon: AssetIcons.userCircle,
-              label: 'Perfil',
-              selected: _selectedIndex == 3,
-              onTap: () => setState(() => _selectedIndex = 3),
-            ),
-          ],
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          border: Border(top: BorderSide(color: Color(0xFFF3F3F3), width: 1)),
+        ),
+        child: BottomAppBar(
+          color: Colors.white,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              BottomNavItem(
+                icon: AssetIcons.map,
+                label: 'Mapa',
+                currentSelectedIndex: currentIndex,
+                index: 0,
+                onSelectItem: onSelectItem,
+              ),
+              BottomNavItem(
+                icon: AssetIcons.diary,
+                label: 'Diários',
+                currentSelectedIndex: currentIndex,
+                index: 1,
+                onSelectItem: onSelectItem,
+              ),
+              IconButton.filled(
+                style: IconButton.styleFrom(backgroundColor: Color(0xFFDDE1FF)),
+                onPressed: () {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.of(context).size.height * 0.9,
+                    ),
+                    builder: (context) => CreateDiaryBottomSheet(),
+                  );
+                },
+                iconSize: 28,
+                icon: Icon(Icons.add, color: Theme.of(context).primaryColor),
+              ),
+              BottomNavItem(
+                icon: AssetIcons.compass,
+                label: 'Explorar',
+                currentSelectedIndex: currentIndex,
+                index: 2,
+                onSelectItem: onSelectItem,
+              ),
+              BottomNavItem(
+                icon: AssetIcons.userCircle,
+                label: 'Perfil',
+                currentSelectedIndex: currentIndex,
+                index: 3,
+                onSelectItem: onSelectItem,
+              ),
+            ],
+          ),
         ),
       ),
-      body: _pages[_selectedIndex],
+      body: Builder(
+        builder: (context) {
+          return switch (currentIndex) {
+            1 => UserDiariesScreen(),
+            2 => Center(child: Text('Explorar')),
+            3 => ProfileScreen(),
+            _ => Scaffold(
+              appBar: AppBar(title: Text('AppBar Mapa')),
+              body: Center(child: Text('Mapa')),
+            ),
+          };
+        },
+      ),
     );
   }
 }
