@@ -11,6 +11,7 @@ import 'package:rumo/features/user/widgets/pick_image_dialog.dart';
 import 'package:rumo/services/location_service.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_rating/flutter_rating.dart';
 
 class CreateDiaryBottomSheet extends StatefulWidget {
   const CreateDiaryBottomSheet({super.key});
@@ -20,6 +21,7 @@ class CreateDiaryBottomSheet extends StatefulWidget {
 }
 
 class _CreateDiaryBottomSheetState extends State<CreateDiaryBottomSheet> {
+  double rating = 2.5;
   final locationService = LocationService();
 
   bool isPrivate = false;
@@ -215,7 +217,9 @@ class _CreateDiaryBottomSheetState extends State<CreateDiaryBottomSheet> {
                   children: [
                     SearchAnchor.bar(
                       searchController: _locationSearchController,
-                      barBackgroundColor: WidgetStateProperty.all(const Color(0xFFF9FAFB)),
+                      barBackgroundColor: WidgetStateProperty.all(
+                        const Color(0xFFF9FAFB),
+                      ),
                       barHintText: 'Localização',
                       barHintStyle: WidgetStateProperty.all(
                         TextStyle(color: Color(0xFF9EA2AE)),
@@ -427,6 +431,7 @@ class _CreateDiaryBottomSheetState extends State<CreateDiaryBottomSheet> {
                       decoration: BoxDecoration(
                         border: Border.all(color: Color(0xFFD9D9D9), width: 1),
                         borderRadius: BorderRadius.circular(12),
+                        color: Color(0xFFF9FAFB),
                       ),
                       padding: EdgeInsets.all(16),
                       child: Column(
@@ -436,38 +441,19 @@ class _CreateDiaryBottomSheetState extends State<CreateDiaryBottomSheet> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              SvgPicture.asset(
-                                AssetIcons.iconStar,
-                                width: 24,
-                                height: 24,
-                                colorFilter: ColorFilter.mode(
-                                  Color(0xFFFFCB45),
-                                  BlendMode.srcIn,
-                                ),
-                              ),
-                              SvgPicture.asset(
-                                AssetIcons.iconStar,
-                                width: 24,
-                                height: 24,
-                                colorFilter: ColorFilter.mode(
-                                  Color(0xFFFFCB45),
-                                  BlendMode.srcIn,
-                                ),
-                              ),
-                              SvgPicture.asset(
-                                AssetIcons.iconHalfStar,
-                                width: 24,
-                                height: 24,
-                              ),
-                              SvgPicture.asset(
-                                AssetIcons.iconStar,
-                                width: 24,
-                                height: 24,
-                              ),
-                              SvgPicture.asset(
-                                AssetIcons.iconStar,
-                                width: 24,
-                                height: 24,
+                              StarRating(
+                                size: 30.0,
+                                rating: rating,
+                                filledIcon: Icons.star,
+                                halfFilledIcon: Icons.star_half,
+                                emptyIcon: Icons.star_outlined,
+                                color: Colors.yellow,
+                                borderColor: Colors.grey,
+                                allowHalfRating: true,
+                                starCount: 5,
+                                onRatingChanged: (rating) => setState(() {
+                                  this.rating = rating;
+                                }),
                               ),
                             ],
                           ),
