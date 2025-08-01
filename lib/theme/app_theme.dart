@@ -86,6 +86,47 @@ class AppTheme {
         }),
         filled: true,
       ),
+
+      searchBarTheme: SearchBarThemeData(
+        backgroundColor: WidgetStateColor.resolveWith((states) => Colors.white),
+        shape: WidgetStateProperty.all(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: Color(0xFFE5E7EA), width: 1.5),
+          ),
+        ),
+        shadowColor: WidgetStateColor.transparent,
+      ),
+
+      searchViewTheme: SearchViewThemeData(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(12),
+            topRight: Radius.circular(12),
+          ),
+          side: BorderSide(color: Color(0xFFE5E7EA), width: 1.5),
+        ),
+        elevation: 4, // Adiciona sombra
+        surfaceTintColor: Colors.white, // Remove tint no Material 3
+
+        // Separação da barra principal
+        headerHeight: 55, // Altura do header
+        headerHintStyle: TextStyle(
+          color: Color(0xFF9EA2AE),
+          fontSize: 14,
+          fontFamily: 'Inter',
+        ),
+
+        // Espaçamento interno
+        barPadding: EdgeInsets.all(16),
+
+        // Divisor entre itens
+        dividerColor: Color(0xFFE5E7EA),
+
+        shrinkWrap: true,
+      ),
+
     );
   }
 }

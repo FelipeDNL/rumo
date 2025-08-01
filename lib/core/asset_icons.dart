@@ -11,4 +11,5 @@ class AssetIcons {
   static const String iconThreeLines = '$_assetsPath/three_lines.svg';
   static const String iconTag = '$_assetsPath/tag.svg';
   static const String iconPhoto = '$_assetsPath/photo.svg';
+  static const String iconLocalPin = '$_assetsPath/location_pin.svg';
 }

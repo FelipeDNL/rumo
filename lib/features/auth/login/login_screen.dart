@@ -164,7 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 obscureText: hidePassword,
                                 decoration: InputDecoration(
                                   labelText: 'Senha',
-                                   suffixIcon: IconButton(
+                                  suffixIcon: IconButton(
                                     onPressed: () {
                                       setState(() {
                                         hidePassword = !hidePassword;
@@ -219,7 +219,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                         ).popUntil((route) => route.isFirst);
                                         Navigator.pushReplacementNamed(
                                           context,
-                                        HomeRoutes.homeScreen,
+                                          HomeRoutes.homeScreen,
                                         );
                                       } on AuthException catch (error) {
                                         if (!context.mounted) return;

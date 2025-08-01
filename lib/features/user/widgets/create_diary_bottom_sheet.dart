@@ -7,8 +7,10 @@ import 'package:latlong2/latlong.dart';
 import 'package:rumo/core/asset_icons.dart';
 import 'package:rumo/features/diary/models/create_diary_model.dart';
 import 'package:rumo/features/diary/repositories/diary_repository.dart';
+import 'package:rumo/features/user/widgets/pick_image_dialog.dart';
 import 'package:rumo/services/location_service.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:flutter/foundation.dart';
 
 class CreateDiaryBottomSheet extends StatefulWidget {
   const CreateDiaryBottomSheet({super.key});
@@ -21,13 +23,18 @@ class _CreateDiaryBottomSheetState extends State<CreateDiaryBottomSheet> {
   final locationService = LocationService();
 
   bool isPrivate = false;
-  final SearchController locationSearchController = SearchController();
-  final TextEditingController _tripNameController = TextEditingController();
-  final TextEditingController _resumeController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  final _locationSearchController = SearchController();
+  final _tripNameController = TextEditingController();
+  final _resumeController = TextEditingController();
+
+  bool isLoading = false;
 
   LatLng? userCoordinates;
   List<Placemark> placemarks = [];
   File? selectedImage;
+  XFile? selectedImageXFile;
+  String? _locationError;
   List<File> tripImages = [];
 
   @override
@@ -56,6 +63,10 @@ class _CreateDiaryBottomSheetState extends State<CreateDiaryBottomSheet> {
       userCoordinates = LatLng(userPosition.latitude!, userPosition.longitude!);
       placemarks = places;
     });
+  }
+
+  bool _validateImages() {
+    return selectedImage != null || selectedImageXFile != null;
   }
 
   InputDecoration iconTextFieldDecoration({
@@ -96,7 +107,9 @@ class _CreateDiaryBottomSheetState extends State<CreateDiaryBottomSheet> {
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
               ),
               TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.pop(context);
+                },
                 style: TextButton.styleFrom(
                   foregroundColor: Theme.of(context).colorScheme.primary,
                   textStyle: TextStyle(
@@ -117,12 +130,22 @@ class _CreateDiaryBottomSheetState extends State<CreateDiaryBottomSheet> {
 
                 final file = await imagePicker.pickImage(
                   source: ImageSource.gallery,
+                  imageQuality: 85,
                 );
+
                 if (file == null) return;
 
-                setState(() {
-                  selectedImage = File(file.path);
-                });
+                // para web
+                if (kIsWeb) {
+                  setState(() {
+                    selectedImage = null;
+                    selectedImageXFile = file;
+                  });
+                } else {
+                  setState(() {
+                    selectedImage = File(file.path);
+                  });
+                }
               },
               child: Container(
                 height: 136,
@@ -134,9 +157,11 @@ class _CreateDiaryBottomSheetState extends State<CreateDiaryBottomSheet> {
                           end: Alignment.bottomCenter,
                         )
                       : null,
-                  image: selectedImage != null
+                  image: (selectedImage != null || selectedImageXFile != null)
                       ? DecorationImage(
-                          image: FileImage(selectedImage!),
+                          image: kIsWeb && selectedImageXFile != null
+                              ? NetworkImage(selectedImageXFile!.path)
+                              : FileImage(selectedImage!) as ImageProvider,
                           fit: BoxFit.cover,
                           colorFilter: ColorFilter.mode(
                             Colors.black.withAlpha(100),
@@ -180,263 +205,373 @@ class _CreateDiaryBottomSheetState extends State<CreateDiaryBottomSheet> {
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(left: 24, right: 24, top: 94),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: 16,
-                children: [
-                  SearchAnchor.bar(
-                    searchController: locationSearchController,
-                    suggestionsBuilder: (context, controller) {
-                      return List.generate(placemarks.length, (index) {
-                        final placemark = placemarks.elementAt(index);
-                        final text =
-                            '${placemark.street}, ${placemark.name}, ${placemark.locality}, ${placemark.country}';
-                        return InkWell(
-                          onTap: () {
-                            controller.closeView(text);
-                            controller.text = text;
-                          },
-                          child: Text(text),
-                        );
-                      });
-                    },
-                    isFullScreen: false,
-                  ),
-                  TextFormField(
-                    controller: _tripNameController,
-                    decoration: iconTextFieldDecoration(
-                      icon: SvgPicture.asset(
-                        AssetIcons.iconTag,
+            Form(
+              key: _formKey,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 24, right: 24, top: 94),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: 16,
+                  children: [
+                    SearchAnchor.bar(
+                      searchController: _locationSearchController,
+                      barBackgroundColor: WidgetStateProperty.all(const Color(0xFFF9FAFB)),
+                      barHintText: 'Localização',
+                      barHintStyle: WidgetStateProperty.all(
+                        TextStyle(color: Color(0xFF9EA2AE)),
+                      ),
+                      barLeading: SvgPicture.asset(
+                        AssetIcons.iconLocalPin,
                         width: 24,
                         height: 24,
                         fit: BoxFit.cover,
                       ),
-                      hintText: 'Nome da sua viagem',
-                    ),
-                  ),
-                  TextFormField(
-                    controller: _resumeController,
-                    minLines: 4,
-                    maxLines: 4,
-                    decoration: iconTextFieldDecoration(
-                      icon: SvgPicture.asset(
-                        AssetIcons.iconThreeLines,
-                        width: 16,
-                        height: 16,
+                      viewLeading: SvgPicture.asset(
+                        AssetIcons.iconLocalPin,
+                        width: 24,
+                        height: 24,
                         fit: BoxFit.cover,
                       ),
-                      hintText: 'Resumo da sua viagem',
+                      suggestionsBuilder: (context, controller) {
+                        return List.generate(placemarks.length, (index) {
+                          final placemark = placemarks.elementAt(index);
+                          final text =
+                              '${placemark.street}, ${placemark.name}, ${placemark.locality}, ${placemark.country}';
+                          return InkWell(
+                            onTap: () {
+                              controller.closeView(text);
+                              controller.text = text;
+                              if (_formKey.currentState != null) {
+                                _formKey.currentState!.validate();
+                              }
+                            },
+                            child: Text(
+                              text,
+                              style: TextStyle(
+                                color: controller.text.isEmpty
+                                    ? Colors.grey
+                                    : Colors.black,
+                              ),
+                            ),
+                          );
+                        });
+                      },
+                      isFullScreen: false,
+                      dividerColor: Colors.transparent,
                     ),
-                  ),
-                  InkWell(
-                    onTap: () async {
-                      final pickedFiles = await ImagePicker().pickMultiImage();
-                      if (pickedFiles.isEmpty) return;
-
-                      setState(() {
-                        tripImages = pickedFiles
-                            .map((file) => File(file.path))
-                            .toList();
-                      });
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Color(0xFFF9FAFB),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: Color(0xFFE5E7EA),
-                          width: 1.5,
+                    if (_locationError != null)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8),
+                        child: Text(
+                          _locationError!,
+                          style: TextStyle(color: Colors.red, fontSize: 12),
                         ),
                       ),
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 17.5,
+                    TextFormField(
+                      controller: _tripNameController,
+                      decoration: iconTextFieldDecoration(
+                        icon: SvgPicture.asset(
+                          AssetIcons.iconTag,
+                          width: 24,
+                          height: 24,
+                          fit: BoxFit.cover,
+                        ),
+                        hintText: 'Nome da sua viagem',
                       ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Por favor, insira um nome para viagem';
+                        }
+                        return null;
+                      },
+                    ),
+                    TextFormField(
+                      controller: _resumeController,
+                      minLines: 4,
+                      maxLines: 4,
+                      decoration: iconTextFieldDecoration(
+                        icon: Padding(
+                          padding: const EdgeInsets.only(bottom: 70.0),
+                          child: SvgPicture.asset(
+                            AssetIcons.iconThreeLines,
+                            width: 16,
+                            height: 16,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        hintText: 'Resumo da sua viagem',
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Adicione um resumo da sua viagem';
+                        }
+                        return null;
+                      },
+                    ),
+                    InkWell(
+                      onTap: () async {
+                        final pickedFiles = await ImagePicker()
+                            .pickMultiImage();
+                        if (pickedFiles.isEmpty) return;
+
+                        setState(() {
+                          tripImages = pickedFiles
+                              .map((file) => File(file.path))
+                              .toList();
+                        });
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Color(0xFFF9FAFB),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Color(0xFFE5E7EA),
+                            width: 1.5,
+                          ),
+                        ),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 17.5,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              spacing: 12,
+                              children: [
+                                SvgPicture.asset(
+                                  AssetIcons.iconPhoto,
+                                  width: 18,
+                                  height: 18,
+                                  fit: BoxFit.cover,
+                                ),
+                                Text(
+                                  'Imagens da sua viagem',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.normal,
+                                    color: Color(0xFF9EA2AE),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Builder(
+                              builder: (context) {
+                                if (tripImages.isEmpty) {
+                                  return SizedBox.shrink();
+                                }
+                                return Padding(
+                                  padding: const EdgeInsets.only(top: 12),
+                                  child: Wrap(
+                                    direction: Axis.horizontal,
+                                    runSpacing: 6,
+                                    spacing: 6,
+                                    children: tripImages.map<Widget>((image) {
+                                      return InkWell(
+                                        onTap: () {
+                                          setState(() {
+                                            tripImages.remove(image);
+                                          });
+                                        },
+                                        child: SizedBox(
+                                          height: 56,
+                                          width: 56,
+                                          child: Stack(
+                                            children: [
+                                              Align(
+                                                alignment: Alignment.bottomLeft,
+                                                child: ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(4),
+                                                  child: Image.file(
+                                                    image,
+                                                    width: 48,
+                                                    height: 48,
+                                                    fit: BoxFit.cover,
+                                                  ),
+                                                ),
+                                              ),
+                                              Align(
+                                                alignment: Alignment.topRight,
+                                                child: Container(
+                                                  decoration: BoxDecoration(
+                                                    color: Color(0xFFEE443F),
+                                                    border: Border.all(
+                                                      color: Colors.white,
+                                                      width: 1.17,
+                                                    ),
+                                                    shape: BoxShape.circle,
+                                                  ),
+                                                  child: Icon(
+                                                    Icons.close,
+                                                    size: 14,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Color(0xFFD9D9D9), width: 1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: EdgeInsets.all(16),
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          Text('Nota para a viagem'),
+                          const SizedBox(height: 16),
                           Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            spacing: 12,
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               SvgPicture.asset(
-                                AssetIcons.iconPhoto,
-                                width: 18,
-                                height: 18,
-                                fit: BoxFit.cover,
-                              ),
-                              Text(
-                                'Imagens da sua viagem',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.normal,
-                                  color: Color(0xFF9EA2AE),
+                                AssetIcons.iconStar,
+                                width: 24,
+                                height: 24,
+                                colorFilter: ColorFilter.mode(
+                                  Color(0xFFFFCB45),
+                                  BlendMode.srcIn,
                                 ),
+                              ),
+                              SvgPicture.asset(
+                                AssetIcons.iconStar,
+                                width: 24,
+                                height: 24,
+                                colorFilter: ColorFilter.mode(
+                                  Color(0xFFFFCB45),
+                                  BlendMode.srcIn,
+                                ),
+                              ),
+                              SvgPicture.asset(
+                                AssetIcons.iconHalfStar,
+                                width: 24,
+                                height: 24,
+                              ),
+                              SvgPicture.asset(
+                                AssetIcons.iconStar,
+                                width: 24,
+                                height: 24,
+                              ),
+                              SvgPicture.asset(
+                                AssetIcons.iconStar,
+                                width: 24,
+                                height: 24,
                               ),
                             ],
-                          ),
-                          Builder(
-                            builder: (context) {
-                              if (tripImages.isEmpty) return SizedBox.shrink();
-                              return Padding(
-                                padding: const EdgeInsets.only(top: 12),
-                                child: Wrap(
-                                  direction: Axis.horizontal,
-                                  runSpacing: 6,
-                                  spacing: 6,
-                                  children: tripImages.map<Widget>((image) {
-                                    return InkWell(
-                                      onTap: () {
-                                        setState(() {
-                                          tripImages.remove(image);
-                                        });
-                                      },
-                                      child: SizedBox(
-                                        height: 56,
-                                        width: 56,
-                                        child: Stack(
-                                          children: [
-                                            Align(
-                                              alignment: Alignment.bottomLeft,
-                                              child: ClipRRect(
-                                                borderRadius:
-                                                    BorderRadius.circular(4),
-                                                child: Image.file(
-                                                  image,
-                                                  width: 48,
-                                                  height: 48,
-                                                  fit: BoxFit.cover,
-                                                ),
-                                              ),
-                                            ),
-                                            Align(
-                                              alignment: Alignment.topRight,
-                                              child: Container(
-                                                decoration: BoxDecoration(
-                                                  color: Color(0xFFEE443F),
-                                                  border: Border.all(
-                                                    color: Colors.white,
-                                                    width: 1.17,
-                                                  ),
-                                                  shape: BoxShape.circle,
-                                                ),
-                                                child: Icon(
-                                                  Icons.close,
-                                                  size: 14,
-                                                  color: Colors.white,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  }).toList(),
-                                ),
-                              );
-                            },
                           ),
                         ],
                       ),
                     ),
-                  ),
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Color(0xFFD9D9D9), width: 1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    padding: EdgeInsets.all(16),
-                    child: Column(
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      spacing: 16,
                       children: [
-                        Text('Nota para a viagem'),
-                        const SizedBox(height: 16),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SvgPicture.asset(
-                              AssetIcons.iconStar,
-                              width: 24,
-                              height: 24,
-                              colorFilter: ColorFilter.mode(
-                                Color(0xFFFFCB45),
-                                BlendMode.srcIn,
-                              ),
-                            ),
-                            SvgPicture.asset(
-                              AssetIcons.iconStar,
-                              width: 24,
-                              height: 24,
-                              colorFilter: ColorFilter.mode(
-                                Color(0xFFFFCB45),
-                                BlendMode.srcIn,
-                              ),
-                            ),
-                            SvgPicture.asset(
-                              AssetIcons.iconHalfStar,
-                              width: 24,
-                              height: 24,
-                            ),
-                            SvgPicture.asset(
-                              AssetIcons.iconStar,
-                              width: 24,
-                              height: 24,
-                            ),
-                            SvgPicture.asset(
-                              AssetIcons.iconStar,
-                              width: 24,
-                              height: 24,
-                            ),
-                          ],
+                        Switch(
+                          value: isPrivate,
+                          onChanged: (value) {
+                            setState(() {
+                              isPrivate = value;
+                            });
+                          },
+                        ),
+                        Text(
+                          'Manter diário privado',
+                          style: TextStyle(color: Color(0xFF757575)),
                         ),
                       ],
                     ),
-                  ),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    spacing: 16,
-                    children: [
-                      Switch(
-                        value: isPrivate,
-                        onChanged: (value) {
-                          setState(() {
-                            isPrivate = value;
-                          });
-                        },
-                      ),
-                      Text(
-                        'Manter diário privado',
-                        style: TextStyle(color: Color(0xFF757575)),
-                      ),
-                    ],
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 17),
+        SizedBox(height: 10),
         Padding(
-          padding: EdgeInsetsGeometry.only(left:15, right: 15),
+          padding: const EdgeInsets.only(left: 24.0, right: 24),
           child: FilledButton(
-            onPressed: () {
-              final ownerId = FirebaseAuth.instance.currentUser?.uid;
-              if(ownerId == null) return;
-              DiaryRepository().createDiary(
-                diary: CreateDiaryModel(
-                  ownerId: ownerId,
-                  location: locationSearchController.text,
-                  name: _tripNameController.text,
-                  coverImage: selectedImage?.path ?? '',
-                  resume: _resumeController.text,
-                  images: tripImages.map((image) => image.path).toList(),
-                  rating: 2.5,
-                  isPrivate: isPrivate
-                ),
-              );
-            },
-            child: Text('Salvar Diário'),
+            onPressed: isLoading
+                ? null
+                : () async {
+                    setState(() {
+                      _locationError = _locationSearchController.text.isEmpty
+                          ? 'Selecione uma localização'
+                          : null;
+                    });
+
+                    if (_formKey.currentState!.validate() &&
+                        _validateImages() &&
+                        _locationError == null) {
+                      final ownerId = FirebaseAuth.instance.currentUser?.uid;
+                      if (ownerId == null) return;
+
+                      setState(() {
+                        isLoading = true;
+                      });
+
+                      await DiaryRepository().createDiary(
+                        diary: CreateDiaryModel(
+                          ownerId: ownerId,
+                          location: _locationSearchController.text,
+                          name: _tripNameController.text,
+                          coverImage: selectedImage?.path ?? '',
+                          resume: _resumeController.text,
+                          images: tripImages
+                              .map((image) => image.path)
+                              .toList(),
+                          rating: 2.5,
+                          isPrivate: isPrivate,
+                        ),
+                      );
+
+                      setState(() {
+                        isLoading = false;
+                      });
+
+                      if (!context.mounted) return;
+                      Navigator.pop(context);
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Diário criado com sucesso!'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    } else {
+                      if (!_validateImages()) {
+                        showDialog(
+                          context: context,
+                          builder: (context) {
+                            return PickImageDialog();
+                          },
+                        );
+                      }
+                    }
+                  },
+            child: Builder(
+              builder: (context) {
+                if (isLoading) {
+                  return SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(color: Colors.white),
+                  );
+                }
+                return Text('Entrar');
+              },
+            ),
           ),
         ),
       ],
