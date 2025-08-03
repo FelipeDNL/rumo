@@ -517,7 +517,7 @@ class _CreateDiaryBottomSheetState extends State<CreateDiaryBottomSheet> {
                           images: tripImages
                               .map((image) => image.path)
                               .toList(),
-                          rating: 2.5,
+                          rating: rating,
                           isPrivate: isPrivate,
                         ),
                       );
