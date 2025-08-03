@@ -1,17 +1,17 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:rumo/core/asset_icons.dart';
+import 'package:rumo/features/diary/models/place.dart';
 import 'package:rumo/features/diary/models/create_diary_model.dart';
 import 'package:rumo/features/diary/repositories/diary_repository.dart';
-import 'package:rumo/features/user/widgets/pick_image_dialog.dart';
-import 'package:rumo/services/location_service.dart';
-import 'package:geocoding/geocoding.dart';
+import 'package:rumo/features/diary/repositories/place_repository..dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_rating/flutter_rating.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class CreateDiaryBottomSheet extends StatefulWidget {
   const CreateDiaryBottomSheet({super.key});
@@ -21,54 +21,97 @@ class CreateDiaryBottomSheet extends StatefulWidget {
 }
 
 class _CreateDiaryBottomSheetState extends State<CreateDiaryBottomSheet> {
-  double rating = 2.5;
-  final locationService = LocationService();
+  final placeRepository = PlaceRepository();
 
-  bool isPrivate = false;
   final _formKey = GlobalKey<FormState>();
-  final _locationSearchController = SearchController();
+  final locationSearchController = SearchController();
   final _tripNameController = TextEditingController();
   final _resumeController = TextEditingController();
 
-  bool isLoading = false;
-
-  LatLng? userCoordinates;
-  List<Placemark> placemarks = [];
+  double rating = 2.5;
+  bool isPrivate = false;
+  List<Place> places = [];
   File? selectedImage;
   XFile? selectedImageXFile;
   String? _locationError;
   List<File> tripImages = [];
+  Place? selectedPlace;
+
+  String? lastQuery;
+
+  bool isLoading = false;
+  Timer? _debounce;
 
   @override
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      getUserLocation();
-    });
+    locationSearchController.addListener(_onSearchChanged);
   }
 
-  void getUserLocation() async {
-    final userPosition = await locationService.askAndGetUserLocation();
-    if (userPosition == null) {
-      return;
-    }
+  @override
+  void dispose() {
+    locationSearchController.removeListener(_onSearchChanged);
+    locationSearchController.dispose();
+    _tripNameController.dispose();
+    _resumeController.dispose();
+    super.dispose();
+  }
 
-    if (!mounted) return;
+  void _onSearchChanged() {
+    final query = locationSearchController.text;
 
-    final places = await placemarkFromCoordinates(
-      userPosition.latitude!,
-      userPosition.longitude!,
-    );
+    if (query == lastQuery) return;
 
     setState(() {
-      userCoordinates = LatLng(userPosition.latitude!, userPosition.longitude!);
-      placemarks = places;
+      lastQuery = query;
+    });
+
+    _debounce?.cancel();
+
+    if (query.trim().isEmpty) return;
+
+    _debounce = Timer(Duration(seconds: 1, milliseconds: 500), () async {
+      final remotePlaces = await placeRepository.getPlaces(query: query);
+      if (!mounted) return;
+      setState(() {
+        places = remotePlaces;
+      });
+
+      if (!locationSearchController.isOpen) {
+        locationSearchController.openView();
+      } else {
+        locationSearchController.closeView(query);
+        locationSearchController.openView();
+      }
     });
   }
 
-  bool _validateImages() {
-    return selectedImage != null || selectedImageXFile != null;
+  void showSuccess() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Diário criado com sucesso!'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void showError(String message) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Erro'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   InputDecoration iconTextFieldDecoration({
@@ -216,7 +259,10 @@ class _CreateDiaryBottomSheetState extends State<CreateDiaryBottomSheet> {
                   spacing: 16,
                   children: [
                     SearchAnchor.bar(
-                      searchController: _locationSearchController,
+                      onTap: () {
+                        PlaceRepository().getPlaces(query: 'Galeria Bar');
+                      },
+                      searchController: locationSearchController,
                       barBackgroundColor: WidgetStateProperty.all(
                         const Color(0xFFF9FAFB),
                       ),
@@ -237,26 +283,25 @@ class _CreateDiaryBottomSheetState extends State<CreateDiaryBottomSheet> {
                         fit: BoxFit.cover,
                       ),
                       suggestionsBuilder: (context, controller) {
-                        return List.generate(placemarks.length, (index) {
-                          final placemark = placemarks.elementAt(index);
-                          final text =
-                              '${placemark.street}, ${placemark.name}, ${placemark.locality}, ${placemark.country}';
+                        return List.generate(places.length, (index) {
+                          final place = places.elementAt(index);
+                          final address = place.address;
+                          String placeName = place.name;
+
+                          if (address != null) {
+                            placeName =
+                                '${address.amenity}, ${address.road} - ${address.city} - ${address.country}';
+                          }
+
                           return InkWell(
                             onTap: () {
-                              controller.closeView(text);
-                              controller.text = text;
-                              if (_formKey.currentState != null) {
-                                _formKey.currentState!.validate();
-                              }
+                              setState(() {
+                                controller.closeView(placeName);
+                                controller.text = placeName;
+                                selectedPlace = place;
+                              });
                             },
-                            child: Text(
-                              text,
-                              style: TextStyle(
-                                color: controller.text.isEmpty
-                                    ? Colors.grey
-                                    : Colors.black,
-                              ),
-                            ),
+                            child: Text(placeName),
                           );
                         });
                       },
@@ -492,59 +537,48 @@ class _CreateDiaryBottomSheetState extends State<CreateDiaryBottomSheet> {
                 ? null
                 : () async {
                     setState(() {
-                      _locationError = _locationSearchController.text.isEmpty
+                      _locationError = locationSearchController.text.isEmpty
                           ? 'Selecione uma localização'
                           : null;
                     });
 
-                    if (_formKey.currentState!.validate() &&
-                        _validateImages() &&
-                        _locationError == null) {
-                      final ownerId = FirebaseAuth.instance.currentUser?.uid;
-                      if (ownerId == null) return;
-
-                      setState(() {
-                        isLoading = true;
-                      });
-
-                      await DiaryRepository().createDiary(
-                        diary: CreateDiaryModel(
-                          ownerId: ownerId,
-                          location: _locationSearchController.text,
-                          name: _tripNameController.text,
-                          coverImage: selectedImage?.path ?? '',
-                          resume: _resumeController.text,
-                          images: tripImages
-                              .map((image) => image.path)
-                              .toList(),
-                          rating: rating,
-                          isPrivate: isPrivate,
-                        ),
-                      );
-
-                      setState(() {
-                        isLoading = false;
-                      });
-
-                      if (!context.mounted) return;
-                      Navigator.pop(context);
-
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Diário criado com sucesso!'),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                    } else {
-                      if (!_validateImages()) {
-                        showDialog(
-                          context: context,
-                          builder: (context) {
-                            return PickImageDialog();
-                          },
-                        );
-                      }
+                    if (selectedImage == null) {
+                      showError("Por favor, selecione uma imagem de capa");
+                      return;
                     }
+                    final ownerId = FirebaseAuth.instance.currentUser?.uid;
+                    if (ownerId == null) return;
+
+                    setState(() {
+                      isLoading = true;
+                    });
+
+                    await DiaryRepository().createDiary(
+                      diary: CreateDiaryModel(
+                        ownerId: ownerId,
+                        location: locationSearchController.text,
+                        name: _tripNameController.text,
+                        coverImage: selectedImage?.path ?? '',
+                        resume: _resumeController.text,
+                        images: tripImages.map((image) => image.path).toList(),
+                        rating: rating,
+                        isPrivate: isPrivate,
+                      ),
+                    );
+
+                    setState(() {
+                      isLoading = false;
+                    });
+
+                    if (!context.mounted) return;
+                    Navigator.pop(context);
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Diário criado com sucesso!'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
                   },
             child: Builder(
               builder: (context) {

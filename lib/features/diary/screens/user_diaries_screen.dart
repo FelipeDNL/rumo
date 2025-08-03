@@ -67,6 +67,20 @@ class _UserDiariesScreenState extends State<UserDiariesScreen> {
                 'https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key=$mapKey',
             userAgentPackageName: 'br.com.felipe.rumo',
           ),
+          if (userCooordinates != null)
+            MarkerLayer(
+              markers: [
+                Marker(
+                  point: userCooordinates!,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+              ],
+            ),
         ],
       ),
     );

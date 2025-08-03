@@ -48,6 +48,9 @@ dependencies:
   flutter_form_builder: ^10.1.0
   flutter_rating_stars: ^1.1.0
   flutter_rating: ^2.0.2
+  dio: ^5.8.0+1
+  supabase_flutter: ^2.9.1
+  uuid: ^4.5.1
 
 dev_dependencies:
   flutter_test:
