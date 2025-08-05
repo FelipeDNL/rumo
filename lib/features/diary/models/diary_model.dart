@@ -30,13 +30,13 @@ class DiaryModel {
       id: json['id'],
       ownerId: json['ownerId'],
       name: json['name'],
-      rating: json['rating'],
+      rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
       coverImage: json['coverImage'],
       images: List<String>.from(json['images']),
       location: json['location'],
       resume: json['resume'],
-      latitude: json['latitude'],
-      longitude: json['longitude'],
+      latitude: (json['latitude'] as num?)?.toDouble() ?? 0.0,
+      longitude: (json['longitude'] as num?)?.toDouble() ?? 0.0,
       isPrivate: json['isPrivate'],
     );
   }
