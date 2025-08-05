@@ -69,6 +69,10 @@ class AuthRepository {
       throw AuthException(code: error.code, originalMessage: error.message);
     }
   }
+
+  User? getCurrentUser() {
+    return FirebaseAuth.instance.currentUser;
+  }
 }
 
 class AuthException implements Exception {
@@ -78,22 +82,19 @@ class AuthException implements Exception {
 
   String getMessage() {
     switch (code) {
-      case "invalid-email":
-        return "Email inválido";
-      case "user-disabled":
-        return "O usuário foi desabilitado";
-      case "user-not-found":
-        return "O usuário foi desabilitado";
-      case "wrong-password":
-        return "Senha ou e-mail inválido";
-      case "weak-password":
-        return "Senha deve ter no minímo 6 caracteres";
       case "email-already-in-use":
-        return "Email já cadastrado";
-      case "invalid-user":
-        return "usuário inválido";
+        return "Email já está em uso";
+      case "invalid-email":
+        return "Email não é válido";
+      case "weak-password":
+        return "Sua senha é muito fraca. A senha deve conter no mínimo 6 caracteres";
+      case "user-not-found":
+        return "Usuário não encontrado";
+      case "INVALID_LOGIN_CREDENTIALS":
+      case "invalid-credential":
+        return "Seu usuário ou senha estão incorretos";
       default:
-        return "Erro desconhecido";
+        return originalMessage ?? "Erro desconhecido";
     }
   }
 }
