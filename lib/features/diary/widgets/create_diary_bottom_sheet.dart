@@ -40,6 +40,7 @@ class _CreateDiaryBottomSheetState extends State<CreateDiaryBottomSheet> {
   String? lastQuery;
 
   bool isLoading = false;
+  bool isSearchingPlaces = false;
   Timer? _debounce;
 
   @override
@@ -71,11 +72,16 @@ class _CreateDiaryBottomSheetState extends State<CreateDiaryBottomSheet> {
 
     if (query.trim().isEmpty) return;
 
+    setState(() {
+      isSearchingPlaces = true; // Inicia o loading
+    });
+
     _debounce = Timer(Duration(seconds: 1, milliseconds: 500), () async {
       final remotePlaces = await placeRepository.getPlaces(query: query);
       if (!mounted) return;
       setState(() {
         places = remotePlaces;
+        isSearchingPlaces = false; // Finaliza o loading
       });
 
       if (!locationSearchController.isOpen) {
@@ -253,7 +259,6 @@ class _CreateDiaryBottomSheetState extends State<CreateDiaryBottomSheet> {
                         if (selectedPlace == null) {
                           return 'Por favor, selecione um local';
                         }
-
                         return null;
                       },
                       builder: (formState) {
@@ -272,9 +277,7 @@ class _CreateDiaryBottomSheetState extends State<CreateDiaryBottomSheet> {
                                 width: 24,
                                 height: 24,
                               ),
-                              barSide: WidgetStateProperty.resolveWith((
-                                _,
-                              ) {
+                              barSide: WidgetStateProperty.resolveWith((_) {
                                 if (formState.hasError) {
                                   return BorderSide(
                                     color: Color(0xFFEE443F),
@@ -287,7 +290,7 @@ class _CreateDiaryBottomSheetState extends State<CreateDiaryBottomSheet> {
                                   width: 1.5,
                                 );
                               }),
-                              barHintText: 'Localização',
+                              barHintText: 'Localizaaaação',
                               barPadding: WidgetStatePropertyAll(
                                 EdgeInsets.symmetric(
                                   horizontal: 12,
@@ -301,6 +304,30 @@ class _CreateDiaryBottomSheetState extends State<CreateDiaryBottomSheet> {
                                 );
                               },
                               suggestionsBuilder: (context, controller) {
+                                if (isSearchingPlaces) {
+                                  return [
+                                    Padding(
+                                      padding: const EdgeInsets.all(16.0),
+                                      child: Center(
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                    ),
+                                  ];
+                                }
+                                if (places.isEmpty) {
+                                  return [
+                                    Padding(
+                                      padding: const EdgeInsets.all(16.0),
+                                      child: Text(
+                                        'Nenhum local encontrado.',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Color(0xFF757575),
+                                        ),
+                                      ),
+                                    ),
+                                  ];
+                                }
                                 return List.generate(places.length, (index) {
                                   final place = places.elementAt(index);
                                   final formattedLocation =
@@ -472,6 +499,7 @@ class _CreateDiaryBottomSheetState extends State<CreateDiaryBottomSheet> {
                                                 ),
                                               ),
                                               Align(
+                                                //botão remover
                                                 alignment: Alignment.topRight,
                                                 child: Container(
                                                   decoration: BoxDecoration(

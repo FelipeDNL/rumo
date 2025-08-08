@@ -6,4 +6,6 @@ class AssetImages {
   static const String loginCharacter = '$_assetsPath/login_character.png';
   static const String mapIcon = '$_assetsPath/map_characters.png';
   static const String mapPinBackground = '$_assetsPath/map_pin_background.svg';
+  static const String diariesCount = '$_assetsPath/diaries.png';
+  static const String catedral = '$_assetsPath/catedral_test.png';
 }
