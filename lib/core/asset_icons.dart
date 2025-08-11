@@ -12,4 +12,6 @@ class AssetIcons {
   static const String iconTag = '$_assetsPath/tag.svg';
   static const String iconPhoto = '$_assetsPath/photo.svg';
   static const String iconLocalPin = '$_assetsPath/location_pin.svg';
+  static const String iconDotsMenu = '$_assetsPath/dots_menu.svg';
+  static const String iconChevronDown = '$_assetsPath/chevron_down.svg';
 }

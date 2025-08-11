@@ -66,22 +66,19 @@ class _CreateDiaryBottomSheetState extends State<CreateDiaryBottomSheet> {
 
     setState(() {
       lastQuery = query;
+      isSearchingPlaces = true;
     });
 
     _debounce?.cancel();
 
     if (query.trim().isEmpty) return;
 
-    setState(() {
-      isSearchingPlaces = true; // Inicia o loading
-    });
-
     _debounce = Timer(Duration(seconds: 1, milliseconds: 500), () async {
       final remotePlaces = await placeRepository.getPlaces(query: query);
       if (!mounted) return;
       setState(() {
         places = remotePlaces;
-        isSearchingPlaces = false; // Finaliza o loading
+        isSearchingPlaces = false;
       });
 
       if (!locationSearchController.isOpen) {
@@ -290,7 +287,7 @@ class _CreateDiaryBottomSheetState extends State<CreateDiaryBottomSheet> {
                                   width: 1.5,
                                 );
                               }),
-                              barHintText: 'Localizaaaação',
+                              barHintText: 'Localização',
                               barPadding: WidgetStatePropertyAll(
                                 EdgeInsets.symmetric(
                                   horizontal: 12,

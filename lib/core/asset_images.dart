@@ -8,4 +8,5 @@ class AssetImages {
   static const String mapPinBackground = '$_assetsPath/map_pin_background.svg';
   static const String diariesCount = '$_assetsPath/diaries.png';
   static const String catedral = '$_assetsPath/catedral_test.png';
+  static const String diaryCounterCharacter = '$_assetsPath/diary_counter_character.png';
 }
