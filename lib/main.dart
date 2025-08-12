@@ -15,8 +15,8 @@ void main() async {
   await Future.wait([
     Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform),
     Supabase.initialize(
-      url: AppEnvironment.supabseProjectURL,
-      anonKey: AppEnvironment.placeAPIAgentName,
+      url: AppEnvironment.supabaseProjectURL,
+      anonKey: AppEnvironment.supabseAnonKey,
     ),
   ]);
   runApp(ProviderScope(child: const MyApp()));

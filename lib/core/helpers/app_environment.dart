@@ -9,7 +9,7 @@ class AppEnvironment {
     return dotenv.env['SUPABASE_ANON_KEY'] ?? '<SUPABASE_ANON_KEY>';
   }
 
-  static String get supabseProjectURL {
+  static String get supabaseProjectURL {
     return dotenv.env['SUPABASE_PROJECT_URL'] ?? '<SUPABASE_PROJECT_URL>';
   }
 }
