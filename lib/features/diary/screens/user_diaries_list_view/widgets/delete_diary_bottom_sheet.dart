@@ -43,7 +43,51 @@ class DeleteDiaryBottomSheet extends ConsumerWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Excluir Diário'),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    'Excluir diário',
+                    style: TextStyle(
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w600,
+                      fontSize: 20,
+                    ),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 10),
+                    child: Icon(Icons.close),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 16,),
+            Text(
+              'Todas as informações registradas nele serão perdidas de forma definitiva.',
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 14,
+                fontWeight: FontWeight.normal,
+                color: Color(0xFF757575),
+              ),
+            ),
+            const SizedBox(height: 32),
+            FilledButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              style: FilledButton.styleFrom(
+                minimumSize: Size(double.infinity, 48),
+              ),
+              child: Text("Cancelar"),
+            ),
             TextButton(
               style: TextButton.styleFrom(
                 foregroundColor: Color(0xFFEE443F),
