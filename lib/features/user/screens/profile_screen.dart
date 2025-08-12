@@ -1,6 +1,5 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:rumo/features/onboarding/routes/onboarding_routes.dart';
+import 'package:rumo/features/user/widgets/sign_out_bottom_sheet.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -96,7 +95,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       children: [
                                         Text('Nome: '),
                                         Text(
-                                          'Nome Aqui', // exemplo, substitua conforme necessário
+                                          'Nome Aqui',
                                           style: TextStyle(
                                             fontWeight: FontWeight.bold,
                                           ),
@@ -125,7 +124,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       children: [
                                         Text('Cidade: '),
                                         Text(
-                                          'Cidade Aqui', // exemplo, substitua conforme necessário
+                                          'Cidade Aqui',
                                           style: TextStyle(
                                             fontWeight: FontWeight.bold,
                                           ),
@@ -153,52 +152,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     showModalBottomSheet(
                                       context: context,
                                       builder: (context) {
-                                        return Padding(
-                                          padding: const EdgeInsets.all(24.0),
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Text(
-                                                'Sair da conta',
-                                                style: TextStyle(
-                                                  fontSize: 20,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                              SizedBox(height: 16),
-                                              Text(
-                                                'Tem certeza que deseja sair da sua conta?',
-                                                style: TextStyle(fontSize: 16),
-                                              ),
-                                              SizedBox(height: 24),
-                                              Column(
-                                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                                children: [
-                                                  FilledButton(
-                                                    onPressed: () {
-                                                      Navigator.of(context).pop();
-                                                    },
-                                                    child: Text('Cancelar'),
-                                                  ),
-                                                  ElevatedButton(
-                                                    onPressed: () async {
-                                                      await FirebaseAuth.instance.signOut();
-                                                      if (context.mounted) {
-                                                        Navigator.of(context).popUntil((_) => false);
-                                                        Navigator.pushNamed(
-                                                          context,
-                                                          OnboardingRoutes.onboardingScreen,
-                                                        );
-                                                      }
-                                                    },
-                                                    child: Text('Sair'),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                        );
+                                        return SignOutBottomSheet();
                                       },
                                     );
                                   },

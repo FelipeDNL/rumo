@@ -54,6 +54,9 @@ class SignOutBottomSheet extends StatelessWidget {
             onPressed: () {
               Navigator.of(context).pop();
             },
+            style: FilledButton.styleFrom(
+              minimumSize: Size(double.infinity, 48),
+            ),
             child: Text("Permanecer na minha conta"),
           ),
           const SizedBox(height: 12),
