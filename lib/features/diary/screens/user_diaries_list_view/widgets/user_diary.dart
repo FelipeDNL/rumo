@@ -53,6 +53,13 @@ class UserDiary extends ConsumerWidget {
         ),
         trailing: MenuAnchor(
           alignmentOffset: Offset(-60, 0),
+          style: MenuStyle(
+            shape: WidgetStateProperty.all(
+              RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+          ),
           menuChildren: [
             MenuItemButton(
               onPressed: () {
@@ -105,7 +112,11 @@ class UserDiary extends ConsumerWidget {
                   },
                 );
               },
-              child: Text("Excluir diário"),
+              child: Text("Excluir diário",
+                style: TextStyle(
+                  color: Colors.red
+                ),
+              ),
             ),
           ],
           builder: (context, controller, _) {
