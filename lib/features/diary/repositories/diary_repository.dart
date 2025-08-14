@@ -53,6 +53,22 @@ class DiaryRepository {
     }
   }
 
+  Future<DiaryModel> getDiaryById(String diaryId) async {
+    try {
+      final docSnapshot = await firestore.collection("diaries").doc(diaryId).get();
+      if (docSnapshot.exists) {
+        final data = docSnapshot.data()!;
+        data['id'] = docSnapshot.id;
+        return DiaryModel.fromJson(data);
+      } else {
+        throw Exception("Diary not found");
+      }
+    } catch (e) {
+      log("Error fetching diary by ID", error: e);
+      rethrow;
+    }
+  }
+
   Future<void> deleteDiary({required String diaryId}) async {
     try {
       return firestore.collection("diaries").doc(diaryId).delete();
