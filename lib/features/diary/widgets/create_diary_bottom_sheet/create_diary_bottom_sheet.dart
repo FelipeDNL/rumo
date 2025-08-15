@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:rumo/features/diary/widgets/location_search/location_search_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -25,7 +26,11 @@ class CreateDiaryBottomSheet extends StatefulWidget {
 class _CreateDiaryBottomSheetState extends State<CreateDiaryBottomSheet> {
   final placeRepository = PlaceRepository();
 
-  final SearchController locationSearchController = SearchController();
+  // Passo 1 - CTRL+F e procure por "Passo 2"
+  // mudar controller para TextEditingController aqui
+  // final SearchController locationSearchController = SearchController();
+  final TextEditingController locationSearchController = TextEditingController();
+
   final TextEditingController _tripNameController = TextEditingController();
   final TextEditingController _resumeController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -47,48 +52,16 @@ class _CreateDiaryBottomSheetState extends State<CreateDiaryBottomSheet> {
   void initState() {
     super.initState();
 
-    locationSearchController.addListener(_onSearchChanged);
   }
 
   @override
   void dispose() {
-    locationSearchController.removeListener(_onSearchChanged);
     locationSearchController.dispose();
     _tripNameController.dispose();
     _resumeController.dispose();
     super.dispose();
   }
 
-  void _onSearchChanged() {
-    final query = locationSearchController.text;
-
-    if (query == lastQuery) return;
-
-    setState(() {
-      lastQuery = query;
-      isSearchingPlaces = true;
-    });
-
-    _debounce?.cancel();
-
-    if (query.trim().isEmpty) return;
-
-    _debounce = Timer(Duration(seconds: 1, milliseconds: 500), () async {
-      final remotePlaces = await placeRepository.getPlaces(query: query);
-      if (!mounted) return;
-      setState(() {
-        places = remotePlaces;
-        isSearchingPlaces = false;
-      });
-
-      if (!locationSearchController.isOpen) {
-        locationSearchController.openView();
-      } else {
-        locationSearchController.closeView(query);
-        locationSearchController.openView();
-      }
-    });
-  }
 
   void showSuccess() {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -262,102 +235,17 @@ class _CreateDiaryBottomSheetState extends State<CreateDiaryBottomSheet> {
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            SearchAnchor.bar(
-                              searchController: locationSearchController,
-                              barLeading: SvgPicture.asset(
-                                AssetIcons.iconLocationPin,
-                                width: 24,
-                                height: 24,
-                              ),
-                              viewLeading: SvgPicture.asset(
-                                AssetIcons.iconLocationPin,
-                                width: 24,
-                                height: 24,
-                              ),
-                              barSide: WidgetStateProperty.resolveWith((_) {
-                                if (formState.hasError) {
-                                  return BorderSide(
-                                    color: Color(0xFFEE443F),
-                                    width: 1.5,
-                                  );
-                                }
-
-                                return BorderSide(
-                                  color: Color(0xFFE5E7EA),
-                                  width: 1.5,
-                                );
-                              }),
-                              barHintText: 'Localização',
-                              barPadding: WidgetStatePropertyAll(
-                                EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 10,
-                                ),
-                              ),
-                              viewBuilder: (suggestions) {
-                                return ListView(
-                                  padding: EdgeInsets.zero,
-                                  children: suggestions.toList(),
-                                );
-                              },
-                              suggestionsBuilder: (context, controller) {
-                                if (isSearchingPlaces) {
-                                  return [
-                                    Padding(
-                                      padding: const EdgeInsets.all(16.0),
-                                      child: Center(
-                                        child: CircularProgressIndicator(),
-                                      ),
-                                    ),
-                                  ];
-                                }
-                                if (places.isEmpty) {
-                                  return [
-                                    Padding(
-                                      padding: const EdgeInsets.all(16.0),
-                                      child: Text(
-                                        'Nenhum local encontrado.',
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          color: Color(0xFF757575),
-                                        ),
-                                      ),
-                                    ),
-                                  ];
-                                }
-                                return List.generate(places.length, (index) {
-                                  final place = places.elementAt(index);
-                                  final formattedLocation =
-                                      place.formattedLocation;
-
-                                  return InkWell(
-                                    onTap: () {
-                                      setState(() {
-                                        controller.closeView(formattedLocation);
-                                        selectedPlace = place;
-                                        lastQuery = formattedLocation;
-                                        _debounce?.cancel();
-                                      });
-                                    },
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 12,
-                                      ),
-                                      child: Text(
-                                        place.formattedLocation,
-                                        style: TextStyle(
-                                          fontFamily: 'Inter',
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.normal,
-                                          color: Color(0xFF131927),
-                                        ),
-                                      ),
-                                    ),
-                                  );
+                            //Passo 2
+                            //chamar locationSearchBar aqui passando o controller e o onPlaceSelected
+                            LocationSearchBar( 
+                              controller: locationSearchController,
+                              onPlaceSelected: (place) {
+                                setState(() {
+                                  selectedPlace = place;
+                                  lastQuery = place.formattedLocation;
+                                  _debounce?.cancel();
                                 });
                               },
-                              isFullScreen: false,
                             ),
                             if (formState.hasError) const SizedBox(height: 4),
                             if (formState.hasError &&
